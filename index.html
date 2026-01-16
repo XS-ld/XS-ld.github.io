@@ -4,34 +4,183 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>羊了个羊 - 简约版</title>
-    <!-- 关键：添加版本号强制更新 -->
-    <link rel="stylesheet" href="style.css?v=20240116">
+    
+    <!-- PWA必要配置 -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="羊了个羊">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="description" content="简约版羊了个羊三消小游戏，支持离线游玩">
+    
+    <!-- iOS特定配置 -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%23f6e05e%22/><text x=%2250%22 y=%2270%22 font-size=%2260%22 text-anchor=%22middle%22 fill=%22%231a202c%22>🐑</text></svg>">
+    
+    <!-- PWA清单 -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- CSS样式 -->
+    <link rel="stylesheet" href="style.css?v=3">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐑</text></svg>">
+    
+    <!-- 图标 -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%23f6e05e%22/><text x=%2250%22 y=%2270%22 font-size=%2260%22 text-anchor=%22middle%22 fill=%22%231a202c%22>🐑</text></svg>">
+    
+    <!-- 安装提示样式 -->
     <style>
-        /* 临时样式确保基础显示 */
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, sans-serif; 
-            background: #0f172a; 
-            color: white; 
-            padding: 20px; 
-        }
-        .debug-info {
-            background: #ef4444; 
-            color: white; 
-            padding: 10px; 
-            border-radius: 5px; 
-            margin-bottom: 20px;
+        /* 安装提示框 */
+        .install-prompt {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 50px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            z-index: 9999;
             display: none;
+            align-items: center;
+            gap: 15px;
+            animation: slideUp 0.3s ease;
+        }
+        
+        @keyframes slideUp {
+            from { bottom: -100px; opacity: 0; }
+            to { bottom: 20px; opacity: 1; }
+        }
+        
+        .install-prompt.show {
+            display: flex;
+        }
+        
+        .install-prompt button {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .install-prompt button:hover {
+            transform: scale(1.05);
+        }
+        
+        .install-prompt .close {
+            background: transparent;
+            color: white;
+            border: 1px solid white;
+        }
+        
+        /* PWA安装指引 */
+        .pwa-guide {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 10000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            padding: 20px;
+        }
+        
+        .pwa-guide.show {
+            display: flex;
+        }
+        
+        .pwa-guide-content {
+            max-width: 500px;
+            text-align: center;
+        }
+        
+        .pwa-guide h2 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: #f6e05e;
+        }
+        
+        .pwa-guide ol {
+            text-align: left;
+            margin: 20px auto;
+            padding-left: 20px;
+            max-width: 300px;
+        }
+        
+        .pwa-guide li {
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+        
+        /* App模式样式 */
+        @media (display-mode: standalone) {
+            .theme-toggle {
+                top: 10px;
+            }
+            .language-switcher {
+                top: 10px;
+            }
+            body {
+                padding-top: 10px;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- 调试信息 -->
-    <div class="debug-info" id="debugInfo">
-        CSS加载状态：<span id="cssStatus">检测中...</span>
+    <!-- PWA安装指引 -->
+    <div class="pwa-guide" id="pwaGuide">
+        <div class="pwa-guide-content">
+            <h2>📱 安装到手机</h2>
+            <p>将游戏添加到主屏幕，像App一样使用</p>
+            
+            <div id="iosGuide" style="display:none;">
+                <h3>iOS (iPhone/iPad)：</h3>
+                <ol>
+                    <li>点击底部 <span style="color:#f6e05e;">分享按钮</span> ↑</li>
+                    <li>向下滑动找到 <span style="color:#f6e05e;">"添加到主屏幕"</span></li>
+                    <li>点击"添加"完成安装</li>
+                </ol>
+            </div>
+            
+            <div id="androidGuide" style="display:none;">
+                <h3>Android：</h3>
+                <ol>
+                    <li>点击右上角 <span style="color:#f6e05e;">三个点菜单</span></li>
+                    <li>选择 <span style="color:#f6e05e;">"添加到主屏幕"</span></li>
+                    <li>点击"添加"完成安装</li>
+                </ol>
+            </div>
+            
+            <button onclick="closeGuide()" style="
+                background: #f6e05e;
+                color: #1a202c;
+                border: none;
+                padding: 12px 30px;
+                border-radius: 25px;
+                font-size: 1.1rem;
+                font-weight: bold;
+                margin-top: 30px;
+                cursor: pointer;
+            ">我知道了</button>
+        </div>
     </div>
-    
+
+    <!-- 安装提示 -->
+    <div class="install-prompt" id="installPrompt">
+        <span>📲 将游戏安装到手机？</span>
+        <button onclick="showInstallGuide()">安装教程</button>
+        <button onclick="dismissPrompt()" class="close">稍后</button>
+    </div>
+
     <!-- 主题切换按钮 -->
     <div class="theme-toggle">
         <button id="themeBtn" aria-label="切换主题">
@@ -46,6 +195,31 @@
             <option value="en">English</option>
             <option value="ja">日本語</option>
         </select>
+    </div>
+
+    <!-- 安装App按钮（仅非PWA模式显示） -->
+    <div class="install-btn" id="installBtnContainer" style="
+        position: fixed;
+        top: 20px;
+        right: 90px;
+        z-index: 1000;
+        display: none;
+    ">
+        <button id="installAppBtn" style="
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        " title="安装App">
+            <i class="fas fa-download"></i>
+        </button>
     </div>
 
     <!-- 游戏主容器 -->
@@ -99,14 +273,19 @@
 
             <!-- 主游戏棋盘 -->
             <div class="game-board" id="gameBoard">
-                <div class="card" style="background:#3b82f6;">🐑</div>
-                <div class="card" style="background:#10b981;">🌿</div>
-                <div class="card" style="background:#8b5cf6;">🌸</div>
-                <div class="card" style="background:#f59e0b;">🥕</div>
-                <div class="card" style="background:#ef4444;">💧</div>
-                <div class="card" style="background:#ec4899;">☀️</div>
-                <div class="card" style="background:#6366f1;">🌙</div>
-                <div class="card" style="background:#14b8a6;">⭐</div>
+                <!-- 游戏卡片通过JS生成 -->
+                <div class="card" data-id="1">🐑</div>
+                <div class="card" data-id="2">🌿</div>
+                <div class="card" data-id="3">🌸</div>
+                <div class="card" data-id="4">🥕</div>
+                <div class="card" data-id="1">🐑</div>
+                <div class="card" data-id="2">🌿</div>
+                <div class="card" data-id="3">🌸</div>
+                <div class="card" data-id="4">🥕</div>
+                <div class="card" data-id="1">🐑</div>
+                <div class="card" data-id="2">🌿</div>
+                <div class="card" data-id="3">🌸</div>
+                <div class="card" data-id="4">🥕</div>
             </div>
 
             <!-- 底部卡槽 -->
@@ -129,4 +308,358 @@
         </div>
 
         <!-- 游戏规则说明 -->
-      
+        <div class="game-rules">
+            <button id="rulesToggle" class="btn-rules">
+                <i class="fas fa-question-circle"></i> <span data-i18n="howToPlay">游戏规则</span>
+            </button>
+            <div class="rules-content" id="rulesContent">
+                <h3 data-i18n="rulesTitle">游戏规则：</h3>
+                <ul>
+                    <li data-i18n="rule1">点击选择3个相同的卡片进行消除</li>
+                    <li data-i18n="rule2">卡片必须顶层无遮挡才能选择</li>
+                    <li data-i18n="rule3">堆叠区最多存放7张卡片</li>
+                    <li data-i18n="rule4">消除区需要3张相同卡片</li>
+                    <li data-i18n="rule5">消除所有卡片即可通关</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 安装提示区域 -->
+        <div class="install-info" style="
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            display: none;
+        " id="installInfo">
+            <p style="color: #f6e05e; margin-bottom: 10px;">
+                <i class="fas fa-mobile-alt"></i> 提示：可将此游戏添加到主屏幕
+            </p>
+            <button onclick="showInstallGuide()" style="
+                background: transparent;
+                border: 1px solid #f6e05e;
+                color: #f6e05e;
+                padding: 8px 20px;
+                border-radius: 20px;
+                cursor: pointer;
+            ">
+                <i class="fas fa-info-circle"></i> 查看安装方法
+            </button>
+        </div>
+    </div>
+
+    <!-- PWA和游戏脚本 -->
+    <script>
+    // ==================== PWA功能 ====================
+    
+    // 检测是否已安装
+    function isRunningInPWA() {
+        return window.matchMedia('(display-mode: standalone)').matches || 
+               window.navigator.standalone === true;
+    }
+    
+    // 显示安装引导
+    function showInstallGuide() {
+        const guide = document.getElementById('pwaGuide');
+        const iosGuide = document.getElementById('iosGuide');
+        const androidGuide = document.getElementById('androidGuide');
+        
+        // 检测设备类型
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        const isAndroid = /Android/.test(navigator.userAgent);
+        
+        if (isIOS) {
+            iosGuide.style.display = 'block';
+            androidGuide.style.display = 'none';
+        } else if (isAndroid) {
+            iosGuide.style.display = 'none';
+            androidGuide.style.display = 'block';
+        } else {
+            iosGuide.style.display = 'block';
+            androidGuide.style.display = 'block';
+        }
+        
+        guide.classList.add('show');
+        localStorage.setItem('pwa-guide-shown', 'true');
+    }
+    
+    // 关闭引导
+    function closeGuide() {
+        document.getElementById('pwaGuide').classList.remove('show');
+    }
+    
+    // 隐藏提示
+    function dismissPrompt() {
+        document.getElementById('installPrompt').classList.remove('show');
+        localStorage.setItem('pwa-prompt-dismissed', 'true');
+    }
+    
+    // 延迟安装提示
+    function showDelayedPrompt() {
+        // 检查是否已安装
+        if (isRunningInPWA()) {
+            console.log('✅ 已在PWA模式中运行');
+            document.getElementById('installInfo').style.display = 'none';
+            return;
+        }
+        
+        // 检查是否已提示过
+        if (localStorage.getItem('pwa-prompt-dismissed') === 'true') {
+            return;
+        }
+        
+        // 等待页面加载完成
+        setTimeout(() => {
+            const prompt = document.getElementById('installPrompt');
+            if (prompt && !isRunningInPWA()) {
+                prompt.classList.add('show');
+            }
+            
+            // 显示底部提示
+            document.getElementById('installInfo').style.display = 'block';
+        }, 3000);
+    }
+    
+    // 注册Service Worker
+    function registerServiceWorker() {
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js?v=1')
+                .then(registration => {
+                    console.log('✅ Service Worker 注册成功:', registration.scope);
+                    
+                    // 检查更新
+                    registration.addEventListener('updatefound', () => {
+                        console.log('🔄 Service Worker 更新可用');
+                    });
+                })
+                .catch(error => {
+                    console.log('❌ Service Worker 注册失败:', error);
+                });
+        }
+    }
+    
+    // 监听安装事件
+    let deferredPrompt;
+    
+    window.addEventListener('beforeinstallprompt', (e) => {
+        // 阻止浏览器默认安装提示
+        e.preventDefault();
+        deferredPrompt = e;
+        
+        // 显示自定义安装按钮
+        const installBtn = document.getElementById('installBtnContainer');
+        if (installBtn) {
+            installBtn.style.display = 'block';
+            
+            document.getElementById('installAppBtn').addEventListener('click', async () => {
+                // 显示安装提示
+                e.prompt();
+                
+                // 等待用户选择
+                const choiceResult = await e.userChoice;
+                if (choiceResult.outcome === 'accepted') {
+                    console.log('✅ 用户接受了安装');
+                } else {
+                    console.log('❌ 用户拒绝了安装');
+                }
+                
+                deferredPrompt = null;
+            });
+        }
+    });
+    
+    // 监听安装完成事件
+    window.addEventListener('appinstalled', (evt) => {
+        console.log('🎉 应用已安装到主屏幕');
+        document.getElementById('installPrompt').classList.remove('show');
+        document.getElementById('installInfo').style.display = 'none';
+        localStorage.setItem('app-installed', 'true');
+        
+        // 显示欢迎消息
+        setTimeout(() => {
+            alert('🎮 应用安装成功！现在可以从主屏幕直接打开了。');
+        }, 1000);
+    });
+    
+    // ==================== 游戏基础功能 ====================
+    
+    // 简单的游戏逻辑
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('🎮 羊了个羊游戏加载完成');
+        
+        // 初始化PWA
+        registerServiceWorker();
+        showDelayedPrompt();
+        
+        // 如果是PWA模式，调整界面
+        if (isRunningInPWA()) {
+            console.log('📱 运行在PWA模式');
+            document.title = '羊了个羊';
+        }
+        
+        // 主题切换
+        const themeBtn = document.getElementById('themeBtn');
+        if (themeBtn) {
+            const savedTheme = localStorage.getItem('game-theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            themeBtn.querySelector('i').className = savedTheme === 'light' ? 'fas fa-sun' : 'fas fa-moon';
+            
+            themeBtn.addEventListener('click', () => {
+                const currentTheme = document.documentElement.getAttribute('data-theme');
+                const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+                document.documentElement.setAttribute('data-theme', newTheme);
+                themeBtn.querySelector('i').className = newTheme === 'light' ? 'fas fa-sun' : 'fas fa-moon';
+                localStorage.setItem('game-theme', newTheme);
+            });
+        }
+        
+        // 语言切换
+        const langSelect = document.getElementById('languageSelect');
+        if (langSelect) {
+            const savedLang = localStorage.getItem('game-language') || 'zh-CN';
+            langSelect.value = savedLang;
+            
+            langSelect.addEventListener('change', (e) => {
+                localStorage.setItem('game-language', e.target.value);
+                // 这里可以添加多语言切换逻辑
+            });
+        }
+        
+        // 游戏规则切换
+        const rulesToggle = document.getElementById('rulesToggle');
+        const rulesContent = document.getElementById('rulesContent');
+        if (rulesToggle && rulesContent) {
+            rulesToggle.addEventListener('click', () => {
+                rulesContent.classList.toggle('show');
+            });
+        }
+        
+        // 简单卡片点击逻辑
+        let selectedCards = [];
+        let score = 0;
+        
+        document.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('click', function() {
+                // 切换选择状态
+                this.classList.toggle('selected');
+                
+                if (this.classList.contains('selected')) {
+                    selectedCards.push(this);
+                    document.getElementById('statusMessage').textContent = 
+                        `已选择 ${selectedCards.length} 张卡片`;
+                    
+                    // 检查是否可以消除
+                    if (selectedCards.length === 3) {
+                        const card1 = selectedCards[0].textContent;
+                        const card2 = selectedCards[1].textContent;
+                        const card3 = selectedCards[2].textContent;
+                        
+                        if (card1 === card2 && card2 === card3) {
+                            // 消除成功
+                            selectedCards.forEach((card, index) => {
+                                setTimeout(() => {
+                                    card.style.transform = 'scale(0)';
+                                    setTimeout(() => {
+                                        card.style.display = 'none';
+                                    }, 300);
+                                }, index * 100);
+                            });
+                            
+                            score += 100;
+                            document.getElementById('score').textContent = score;
+                            document.getElementById('statusMessage').textContent = 
+                                '消除成功！+100分';
+                            
+                            selectedCards = [];
+                            
+                            // 检查是否胜利
+                            setTimeout(checkWin, 1000);
+                        } else {
+                            // 消除失败
+                            document.getElementById('statusMessage').textContent = 
+                                '卡片不同，请重新选择';
+                            setTimeout(() => {
+                                selectedCards.forEach(card => {
+                                    card.classList.remove('selected');
+                                });
+                                selectedCards = [];
+                            }, 1000);
+                        }
+                    }
+                } else {
+                    // 取消选择
+                    selectedCards = selectedCards.filter(c => c !== this);
+                }
+            });
+        });
+        
+        // 检查胜利
+        function checkWin() {
+            const remainingCards = document.querySelectorAll('.card:not([style*="display: none"])');
+            if (remainingCards.length === 0) {
+                document.getElementById('statusMessage').textContent = '🎉 恭喜通关！';
+                setTimeout(() => {
+                    alert(`游戏胜利！\n最终得分：${score}\n\n点击"新游戏"重新开始`);
+                }, 500);
+            }
+        }
+        
+        // 新游戏按钮
+        document.getElementById('newGameBtn').addEventListener('click', function() {
+            document.querySelectorAll('.card').forEach(card => {
+                card.style.display = 'flex';
+                card.style.transform = 'scale(1)';
+                card.classList.remove('selected');
+            });
+            score = 0;
+            selectedCards = [];
+            document.getElementById('score').textContent = '0';
+            document.getElementById('statusMessage').textContent = '新游戏开始！';
+        });
+        
+        // 重新开始按钮
+        document.getElementById('restartBtn').addEventListener('click', function() {
+            document.getElementById('newGameBtn').click();
+        });
+        
+        // 提示按钮
+        document.getElementById('hintBtn').addEventListener('click', function() {
+            const availableCards = document.querySelectorAll('.card:not([style*="display: none"]):not(.selected)');
+            if (availableCards.length >= 3) {
+                for (let i = 0; i < 3; i++) {
+                    if (availableCards[i]) {
+                        availableCards[i].classList.add('selected');
+                    }
+                }
+                document.getElementById('statusMessage').textContent = '提示：已选择3张卡片';
+            }
+        });
+        
+        // 撤销按钮
+        document.getElementById('undoBtn').addEventListener('click', function() {
+            selectedCards.forEach(card => {
+                card.classList.remove('selected');
+            });
+            selectedCards = [];
+            document.getElementById('statusMessage').textContent = '已撤销选择';
+        });
+        
+        // 控制台信息
+        console.log('✅ 游戏初始化完成');
+        console.log('🌐 网站地址：https://xs-ld.github.io');
+        console.log('📱 PWA状态：' + (isRunningInPWA() ? '已安装' : '可安装'));
+        
+        // 显示PWA状态
+        if (!isRunningInPWA()) {
+            console.log('💡 提示：点击"..."菜单选择"添加到主屏幕"安装App');
+        }
+    });
+    </script>
+    
+    <!-- 外部JS文件（如果有） -->
+    <script src="data.js?v=2"></script>
+    <script src="game.js?v=2"></script>
+    <script src="ui.js?v=2"></script>
+</body>
+</html>
