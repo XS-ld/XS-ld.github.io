@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>羊了个羊 - 简约版</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐑</text></svg>">
+</head>
+<body>
+    <!-- 主题切换按钮 -->
+    <div class="theme-toggle">
+        <button id="themeBtn" aria-label="切换主题">
+            <i class="fas fa-moon"></i>
+        </button>
+    </div>
+
+    <!-- 语言切换 -->
+    <div class="language-switcher">
+        <select id="languageSelect">
+            <option value="zh-CN">中文</option>
+            <option value="en">English</option>
+            <option value="ja">日本語</option>
+        </select>
+    </div>
+
+    <!-- 游戏主容器 -->
+    <div class="game-container">
+        <header class="game-header">
+            <h1><i class="fas fa-gamepad"></i> <span data-i18n="gameTitle">羊了个羊</span></h1>
+            <div class="game-stats">
+                <div class="stat">
+                    <span class="stat-label" data-i18n="level">关卡</span>
+                    <span class="stat-value" id="currentLevel">1</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label" data-i18n="score">分数</span>
+                    <span class="stat-value" id="score">0</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label" data-i18n="time">时间</span>
+                    <span class="stat-value" id="timer">00:00</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- 游戏控制栏 -->
+        <div class="game-controls">
+            <button id="newGameBtn" class="btn btn-primary">
+                <i class="fas fa-play"></i> <span data-i18n="newGame">新游戏</span>
+            </button>
+            <button id="restartBtn" class="btn btn-secondary">
+                <i class="fas fa-redo"></i> <span data-i18n="restart">重新开始</span>
+            </button>
+            <button id="hintBtn" class="btn btn-hint">
+                <i class="fas fa-lightbulb"></i> <span data-i18n="hint">提示</span>
+            </button>
+            <button id="undoBtn" class="btn btn-undo">
+                <i class="fas fa-undo"></i> <span data-i18n="undo">撤销</span>
+            </button>
+        </div>
+
+        <!-- 游戏主区域 -->
+        <div class="game-main">
+            <!-- 顶部堆叠区 -->
+            <div class="stack-area" id="stackArea">
+                <div class="stack-header">
+                    <h3 data-i18n="stackZone">堆叠区</h3>
+                    <span class="stack-count">(<span id="stackCount">0</span>/7)</span>
+                </div>
+                <div class="stack-slots" id="stackSlots">
+                    <!-- 堆叠槽位通过JS生成 -->
+                </div>
+            </div>
+
+            <!-- 主游戏棋盘 -->
+            <div class="game-board" id="gameBoard">
+                <!-- 游戏卡片通过JS生成 -->
+            </div>
+
+            <!-- 底部卡槽 -->
+            <div class="slot-area" id="slotArea">
+                <div class="slot-header">
+                    <h3 data-i18n="eliminateZone">消除区</h3>
+                    <span class="slot-count">(<span id="slotCount">0</span>/3)</span>
+                </div>
+                <div class="card-slots" id="cardSlots">
+                    <!-- 消除槽位通过JS生成 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 游戏状态提示 -->
+        <div class="game-status">
+            <p id="statusMessage" data-i18n="welcomeMessage">点击卡片开始游戏！</p>
+        </div>
+
+        <!-- 游戏规则说明 -->
+        <div class="game-rules">
+            <button id="rulesToggle" class="btn-rules">
+                <i class="fas fa-question-circle"></i> <span data-i18n="howToPlay">游戏规则</span>
+            </button>
+            <div class="rules-content" id="rulesContent">
+                <h3 data-i18n="rulesTitle">游戏规则：</h3>
+                <ul>
+                    <li data-i18n="rule1">点击选择3个相同的卡片进行消除</li>
+                    <li data-i18n="rule2">卡片必须顶层无遮挡才能选择</li>
+                    <li data-i18n="rule3">堆叠区最多存放7张卡片</li>
+                    <li data-i18n="rule4">消除区需要3张相同卡片</li>
+                    <li data-i18n="rule5">消除所有卡片即可通关</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 胜利/失败弹窗 -->
+        <div class="modal" id="resultModal">
+            <div class="modal-content">
+                <h2 id="resultTitle">🎉 恭喜通关！</h2>
+                <p id="resultMessage">你成功完成了第1关！</p>
+                <div class="result-stats">
+                    <p data-i18n="finalTime">用时：<span id="finalTime">00:00</span></p>
+                    <p data-i18n="finalScore">得分：<span id="finalScore">0</span></p>
+                </div>
+                <div class="modal-buttons">
+                                    <button id="nextLevelBtn" class="btn btn-primary">
+                        <span data-i18n="nextLevel">下一关</span>
+                    </button>
+                    <button id="retryBtn" class="btn btn-secondary">
+                        <span data-i18n="tryAgain">再试一次</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 脚本文件 -->
+    <script src="data.js"></script>
+    <script src="game.js"></script>
+    <script src="ui.js"></script>
+</body>
+</html>
