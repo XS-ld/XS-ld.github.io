@@ -1,0 +1,15 @@
+{
+  "name": "羊了个羊",
+  "short_name": "羊了个羊",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%23f6e05e'/><text x='50' y='70' font-size='60' text-anchor='middle' fill='%231a202c'>🐑</text></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a"
+}
