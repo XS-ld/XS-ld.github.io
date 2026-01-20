@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="monetag" content="2d30c095c238f04e246a03bdf6e2c177">
+    <title>🧧 动态红包系统 - github.kanguang.app</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 头部 -->
+        <header class="header">
+            <div class="logo">
+                <i class="fas fa-gift"></i>
+                <h1>动态红包系统</h1>
+            </div>
+            <div class="site-info">
+                <span class="domain-badge">
+                    <i class="fas fa-link"></i>
+                    github.kanguang.app
+                </span>
+                <span class="live-badge">
+                    <i class="fas fa-circle"></i> LIVE
+                </span>
+            </div>
+        </header>
+
+        <!-- 统计面板 -->
+        <div class="stats-panel">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-calendar-day"></i></div>
+                <div class="stat-number" id="todayCount">0</div>
+                <div class="stat-label">今日点击</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
+                <div class="stat-number" id="totalCount">0</div>
+                <div class="stat-label">总点击</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                <div class="stat-number" id="remainingCount">10</div>
+                <div class="stat-label">剩余次数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-coins"></i></div>
+                <div class="stat-number" id="earnings">0</div>
+                <div class="stat-label">预估收益</div>
+            </div>
+        </div>
+
+        <!-- 红包展示区 -->
+        <div class="packets-container">
+            <h2><i class="fas fa-money-bill-wave"></i> 选择红包</h2>
+            <div class="packets-grid" id="packetsGrid">
+                <!-- 红包动态生成 -->
+            </div>
+        </div>
+
+        <!-- 动态链接生成器 -->
+        <div class="link-generator">
+            <h2><i class="fas fa-link"></i> 动态链接生成</h2>
+            <div class="url-display" id="urlDisplay">
+                点击红包生成动态链接
+            </div>
+            <div class="action-buttons">
+                <button class="btn btn-primary" onclick="generateShareLink()">
+                    <i class="fas fa-share-alt"></i> 生成分享链接
+                </button>
+                <button class="btn btn-secondary" onclick="copyDynamicUrl()">
+                    <i class="fas fa-copy"></i> 复制链接
+                </button>
+                <button class="btn btn-success" onclick="resetStats()">
+                    <i class="fas fa-redo"></i> 重置数据
+                </button>
+            </div>
+        </div>
+
+        <!-- 广告展示区 -->
+        <div class="ad-section">
+            <h2><i class="fas fa-ad"></i> 广告支持</h2>
+            <div class="ad-container" id="adContainer">
+                <!-- Monetag广告将在这里显示 -->
+                <div class="ad-placeholder">
+                    <i class="fas fa-ad"></i>
+                    <p>广告内容区域</p>
+                    <small>感谢您的支持！</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- 使用说明 -->
+        <div class="instructions">
+            <h2><i class="fas fa-info-circle"></i> 使用说明</h2>
+            <div class="instructions-grid">
+                <div class="instruction-item">
+                    <div class="instruction-icon"><i class="fas fa-mouse-pointer"></i></div>
+                    <h3>点击红包</h3>
+                    <p>选择您喜欢的红包类型点击</p>
+                </div>
+                <div class="instruction-item">
+                    <div class="instruction-icon"><i class="fas fa-eye"></i></div>
+                    <h3>观看广告</h3>
+                    <p>支持广告获取收益</p>
+                </div>
+                <div class="instruction-item">
+                    <div class="instruction-icon"><i class="fas fa-link"></i></div>
+                    <h3>生成链接</h3>
+                    <p>每次点击生成唯一动态链接</p>
+                </div>
+                <div class="instruction-item">
+                    <div class="instruction-icon"><i class="fas fa-share"></i></div>
+                    <h3>分享收益</h3>
+                    <p>分享链接增加收益</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 页脚 -->
+        <footer class="footer">
+            <p>
+                <i class="fas fa-globe"></i> 
+                当前网址: <span id="currentUrl"></span>
+            </p>
+            <p class="copyright">
+                &copy; 2024 动态红包系统 | 
+                <i class="fas fa-heart"></i> 感谢支持广告
+            </p>
+        </footer>
+    </div>
+
+    <!-- 模态框 -->
+    <div class="modal" id="rewardModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-gift"></i> 恭喜获得红包！</h3>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="reward-icon">
+                    <i class="fas fa-trophy"></i>
+                </div>
+                <p class="reward-amount" id="rewardAmount">0.00元</p>
+                <p class="reward-desc" id="rewardDesc">幸运红包</p>
+                <div class="ad-notice">
+                    <i class="fas fa-info-circle"></i>
+                    <p>广告收益已计入您的账户</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="closeModal()">
+                    继续领取
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 脚本 -->
+    <script src="script.js"></script>
+</body>
+</html>
