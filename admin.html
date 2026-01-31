@@ -21,6 +21,9 @@
             background: #2c3e50;
             color: white;
             padding: 20px 0;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
         }
         
         .admin-logo {
@@ -67,6 +70,7 @@
             flex: 1;
             padding: 20px;
             overflow-y: auto;
+            margin-left: 250px;
         }
         
         .admin-header {
@@ -303,6 +307,12 @@
             
             .admin-sidebar {
                 width: 100%;
+                position: static;
+                height: auto;
+            }
+            
+            .admin-main {
+                margin-left: 0;
             }
             
             .form-row {
@@ -314,516 +324,6 @@
             }
         }
     </style>
-    <script src="db.js"></script>
-    <script src="ads.js"></script>
-    <script src="stats.js"></script>
-    <script>
-        // 管理后台JavaScript
-        class AdminPanel {
-            constructor() {
-                this.init();
-            }
-            
-            async init() {
-                try {
-                    // 初始化数据库
-                    await DatabaseService.initDatabase();
-                    
-                    // 检查管理员登录
-                    await this.checkAdminAuth();
-                    
-                    // 初始化事件监听
-                    this.initEventListeners();
-                    
-                    // 加载数据
-                    await this.loadDashboard();
-                    
-                    console.log('管理后台初始化完成');
-                    
-                } catch (error) {
-                    console.error('管理后台初始化失败:', error);
-                    this.showError('系统初始化失败');
-                }
-            }
-            
-            // 检查管理员认证
-            async checkAdminAuth() {
-                const isLoggedIn = localStorage.getItem('adminLoggedIn');
-                if (!isLoggedIn) {
-                    window.location.href = 'index.html';
-                    return;
-                }
-            }
-            
-            // 初始化事件监听
-            initEventListeners() {
-                // 导航菜单
-                document.querySelectorAll('.nav-link').forEach(link => {
-                    link.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        const section = e.target.dataset.section;
-                        this.showSection(section);
-                    });
-                });
-                
-                // 退出登录
-                document.getElementById('logout-btn').addEventListener('click', () => {
-                    this.handleLogout();
-                });
-                
-                // 刷新数据
-                document.getElementById('refresh-btn').addEventListener('click', async () => {
-                    await this.loadDashboard();
-                });
-                
-                // 添加广告按钮
-                document.getElementById('add-ad-btn').addEventListener('click', () => {
-                    this.showAddAdForm();
-                });
-                
-                // 保存广告按钮
-                document.getElementById('save-ad-btn').addEventListener('click', async () => {
-                    await this.saveAd();
-                });
-                
-                // 导出数据按钮
-                document.getElementById('export-data-btn').addEventListener('click', async () => {
-                    await this.exportData();
-                });
-                
-                // 搜索功能
-                document.getElementById('search-btn').addEventListener('click', async () => {
-                    await this.searchUsers();
-                });
-                
-                // 日期筛选
-                document.getElementById('date-filter').addEventListener('change', async () => {
-                    await this.loadIncomeReport();
-                });
-            }
-            
-            // 显示指定部分
-            showSection(sectionId) {
-                // 更新导航激活状态
-                document.querySelectorAll('.nav-link').forEach(link => {
-                    link.classList.remove('active');
-                    if (link.dataset.section === sectionId) {
-                        link.classList.add('active');
-                    }
-                });
-                
-                // 显示对应内容
-                document.querySelectorAll('.section-content').forEach(section => {
-                    section.classList.remove('active');
-                    if (section.id === sectionId) {
-                        section.classList.add('active');
-                    }
-                });
-            }
-            
-            // 加载仪表盘数据
-            async loadDashboard() {
-                try {
-                    // 显示加载状态
-                    this.showLoading('dashboard-content');
-                    
-                    // 获取平台统计
-                    const platformStats = await adSystem.getPlatformStats();
-                    const adPerformance = await statsSystem.getAdPerformanceStats();
-                    
-                    // 更新仪表盘数据
-                    if (platformStats) {
-                        document.getElementById('total-users').textContent = platformStats.totalUsers;
-                        document.getElementById('active-users').textContent = platformStats.activeUsers;
-                        document.getElementById('total-views').textContent = platformStats.totalViews;
-                        document.getElementById('total-income').textContent = platformStats.totalEarnings.toFixed(2);
-                        document.getElementById('completion-rate').textContent = `${platformStats.completionRate}%`;
-                        document.getElementById('today-views').textContent = platformStats.todayViews;
-                        document.getElementById('today-income').textContent = platformStats.todayEarnings.toFixed(2);
-                        document.getElementById('online-users').textContent = platformStats.activeUsers;
-                        document.getElementById('hour-views').textContent = platformStats.last7Days[platformStats.last7Days.length-1].views;
-                        document.getElementById('monetag-ads').textContent = platformStats.monetagAds;
-                        document.getElementById('revenue-per-view').textContent = platformStats.revenuePerView;
-                    }
-                    
-                    // 更新广告表现表格
-                    await this.updateAdPerformanceTable(adPerformance);
-                    
-                    // 更新收入图表
-                    await this.updateIncomeChart(platformStats ? platformStats.last7Days : []);
-                    
-                    // 隐藏加载状态
-                    this.hideLoading('dashboard-content');
-                    
-                } catch (error) {
-                    console.error('加载仪表盘数据失败:', error);
-                    this.showError('加载数据失败');
-                }
-            }
-            
-            // 更新广告表现表格
-            async updateAdPerformanceTable(adPerformance) {
-                const tableBody = document.getElementById('ad-performance-body');
-                if (!tableBody) return;
-                
-                tableBody.innerHTML = '';
-                
-                if (!adPerformance || adPerformance.length === 0) {
-                    tableBody.innerHTML = '<tr><td colspan="8" style="text-align: center;">暂无广告数据</td></tr>';
-                    return;
-                }
-                
-                adPerformance.forEach(ad => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${ad.title}</td>
-                        <td>${ad.totalViews}</td>
-                        <td>${ad.completedViews}</td>
-                        <td>${ad.completionRate}%</td>
-                        <td>${ad.totalEarnings.toFixed(2)}</td>
-                        <td>${ad.currentViews} / ${ad.maxViews}</td>
-                        <td>${ad.isActive ? '启用' : '停用'}</td>
-                        <td>
-                            <button class="btn-small edit-ad" data-id="${ad.adId}">编辑</button>
-                            <button class="btn-small toggle-ad" data-id="${ad.adId}" data-active="${ad.isActive}">
-                                ${ad.isActive ? '停用' : '启用'}
-                            </button>
-                        </td>
-                    `;
-                    tableBody.appendChild(row);
-                });
-                
-                // 添加编辑按钮事件
-                document.querySelectorAll('.edit-ad').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        const adId = e.target.dataset.id;
-                        this.editAd(adId);
-                    });
-                });
-                
-                // 添加切换状态按钮事件
-                document.querySelectorAll('.toggle-ad').forEach(btn => {
-                    btn.addEventListener('click', async (e) => {
-                        const adId = e.target.dataset.id;
-                        const isActive = e.target.dataset.active === 'true';
-                        await this.toggleAdStatus(adId, !isActive);
-                    });
-                });
-            }
-            
-            // 更新收入图表
-            async updateIncomeChart(data) {
-                const chartContainer = document.getElementById('income-chart');
-                if (!chartContainer) return;
-                
-                if (!data || data.length === 0) {
-                    chartContainer.innerHTML = '<p>暂无收入数据</p>';
-                    return;
-                }
-                
-                let html = '<table class="data-table"><thead><tr><th>日期</th><th>观看次数</th><th>收入(元)</th></tr></thead><tbody>';
-                
-                data.forEach(item => {
-                    html += `<tr>
-                        <td>${item.date}</td>
-                        <td>${item.views}</td>
-                        <td>${item.earnings.toFixed(2)}</td>
-                    </tr>`;
-                });
-                
-                html += '</tbody></table>';
-                chartContainer.innerHTML = html;
-            }
-            
-            // 显示添加广告表单
-            showAddAdForm() {
-                // 清空表单
-                document.getElementById('ad-form').reset();
-                document.getElementById('ad-id').value = '';
-                
-                // 显示广告管理部分
-                this.showSection('ads');
-            }
-            
-            // 保存广告
-            async saveAd() {
-                try {
-                    const formData = {
-                        title: document.getElementById('ad-title').value.trim(),
-                        description: document.getElementById('ad-description').value.trim(),
-                        reward: document.getElementById('ad-reward').value,
-                        duration: document.getElementById('ad-duration').value,
-                        maxViews: document.getElementById('ad-max-views').value,
-                        isActive: document.getElementById('ad-active').checked
-                    };
-                    
-                    // 验证数据
-                    if (!formData.title || !formData.description) {
-                        this.showError('请填写广告标题和描述');
-                        return;
-                    }
-                    
-                    if (formData.reward <= 0 || formData.duration <= 0 || formData.maxViews <= 0) {
-                        this.showError('奖励金额、时长和最大观看次数必须大于0');
-                        return;
-                    }
-                    
-                    const adId = document.getElementById('ad-id').value;
-                    let result;
-                    
-                    if (adId) {
-                        // 更新现有广告
-                        result = await adSystem.updateAd(parseInt(adId), formData);
-                    } else {
-                        // 创建新广告
-                        result = await adSystem.createAd(formData);
-                    }
-                    
-                    if (result.success) {
-                        this.showSuccess('广告保存成功');
-                        // 重新加载广告列表
-                        await this.loadAdList();
-                        // 重新加载仪表盘
-                        await this.loadDashboard();
-                        // 清空表单
-                        document.getElementById('ad-form').reset();
-                        document.getElementById('ad-id').value = '';
-                    } else {
-                        this.showError(result.message);
-                    }
-                    
-                } catch (error) {
-                    console.error('保存广告失败:', error);
-                    this.showError('保存失败');
-                }
-            }
-            
-            // 编辑广告
-            async editAd(adId) {
-                try {
-                    const ad = await adSystem.getAd(parseInt(adId));
-                    if (!ad) {
-                        this.showError('广告不存在');
-                        return;
-                    }
-                    
-                    // 填充表单
-                    document.getElementById('ad-id').value = ad.id;
-                    document.getElementById('ad-title').value = ad.title;
-                    document.getElementById('ad-description').value = ad.description;
-                    document.getElementById('ad-reward').value = ad.reward;
-                    document.getElementById('ad-duration').value = ad.duration;
-                    document.getElementById('ad-max-views').value = ad.maxViews;
-                    document.getElementById('ad-active').checked = ad.isActive;
-                    
-                    // 显示广告管理部分
-                    this.showSection('ads');
-                    
-                } catch (error) {
-                    console.error('编辑广告失败:', error);
-                    this.showError('加载广告信息失败');
-                }
-            }
-            
-            // 切换广告状态
-            async toggleAdStatus(adId, isActive) {
-                try {
-                    const result = await adSystem.updateAd(parseInt(adId), { isActive });
-                    
-                    if (result.success) {
-                        this.showSuccess(`广告已${isActive ? '启用' : '停用'}`);
-                        // 重新加载广告列表
-                        await this.loadAdList();
-                        // 重新加载仪表盘
-                        await this.loadDashboard();
-                    } else {
-                        this.showError(result.message);
-                    }
-                    
-                } catch (error) {
-                    console.error('切换广告状态失败:', error);
-                    this.showError('操作失败');
-                }
-            }
-            
-            // 加载广告列表
-            async loadAdList() {
-                try {
-                    const ads = await adSystem.getActiveAds();
-                    const tableBody = document.getElementById('ads-list-body');
-                    
-                    if (!tableBody) return;
-                    
-                    tableBody.innerHTML = '';
-                    
-                    if (ads.length === 0) {
-                        tableBody.innerHTML = '<tr><td colspan="8" style="text-align: center;">暂无广告</td></tr>';
-                        return;
-                    }
-                    
-                    ads.forEach(ad => {
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td>${ad.id}</td>
-                            <td>${ad.title}</td>
-                            <td>${ad.reward.toFixed(2)}</td>
-                            <td>${ad.duration}秒</td>
-                            <td>${ad.currentViews} / ${ad.maxViews}</td>
-                            <td>${ad.isActive ? '启用' : '停用'}</td>
-                            <td>${new Date(ad.createdAt).toLocaleDateString('zh-CN')}</td>
-                            <td>
-                                <button class="btn-small edit-ad" data-id="${ad.id}">编辑</button>
-                                <button class="btn-small toggle-ad" data-id="${ad.id}" data-active="${ad.isActive}">
-                                    ${ad.isActive ? '停用' : '启用'}
-                                </button>
-                            </td>
-                        `;
-                        tableBody.appendChild(row);
-                    });
-                    
-                } catch (error) {
-                    console.error('加载广告列表失败:', error);
-                }
-            }
-            
-            // 搜索用户
-            async searchUsers() {
-                this.showError('搜索功能开发中');
-            }
-            
-            // 加载收入报告
-            async loadIncomeReport() {
-                try {
-                    const dateFilter = document.getElementById('date-filter').value;
-                    let startDate, endDate;
-                    
-                    const today = new Date();
-                    
-                    switch (dateFilter) {
-                        case 'today':
-                            startDate = today.toISOString().split('T')[0];
-                            endDate = startDate;
-                            break;
-                        case 'week':
-                            startDate = new Date(today.setDate(today.getDate() - 7)).toISOString().split('T')[0];
-                            endDate = new Date().toISOString().split('T')[0];
-                            break;
-                        case 'month':
-                            startDate = new Date(today.setMonth(today.getMonth() - 1)).toISOString().split('T')[0];
-                            endDate = new Date().toISOString().split('T')[0];
-                            break;
-                        default:
-                            startDate = '2024-01-01';
-                            endDate = new Date().toISOString().split('T')[0];
-                    }
-                    
-                    const report = await statsSystem.getIncomeReport(startDate, endDate);
-                    
-                    if (report) {
-                        // 显示报告数据
-                        document.getElementById('report-period').textContent = 
-                            `${report.period.startDate} 至 ${report.period.endDate}`;
-                        document.getElementById('report-total-income').textContent = 
-                            report.totalEarnings.toFixed(2);
-                        document.getElementById('report-total-views').textContent = 
-                            report.totalViews;
-                        
-                        // 显示详细数据表格
-                        this.displayReportDetails(report);
-                    }
-                    
-                } catch (error) {
-                    console.error('加载收入报告失败:', error);
-                }
-            }
-            
-            // 显示报告详情
-            displayReportDetails(report) {
-                const container = document.getElementById('report-details');
-                if (!container) return;
-                
-                let html = '<h4>按日期统计</h4>';
-                html += '<table class="data-table"><thead><tr><th>日期</th><th>观看次数</th><th>收入</th></tr></thead><tbody>';
-                
-                report.byDate.forEach(item => {
-                    html += `<tr>
-                        <td>${item.date}</td>
-                        <td>${item.count}</td>
-                        <td>${item.total.toFixed(2)}</td>
-                    </tr>`;
-                });
-                
-                html += '</tbody></table>';
-                container.innerHTML = html;
-            }
-            
-            // 导出数据
-            async exportData() {
-                try {
-                    const format = document.getElementById('export-format').value;
-                    const type = document.getElementById('export-type').value;
-                    
-                    const data = await statsSystem.exportData(type, format);
-                    
-                    // 创建下载链接
-                    const blob = new Blob([data], { type: format === 'json' ? 'application/json' : 'text/csv' });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `ad-platform-${type}-${new Date().toISOString().split('T')[0]}.${format}`;
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(url);
-                    
-                    this.showSuccess('数据导出成功');
-                    
-                } catch (error) {
-                    console.error('导出数据失败:', error);
-                    this.showError('导出失败');
-                }
-            }
-            
-            // 处理退出登录
-            handleLogout() {
-                if (confirm('确定要退出管理员登录吗？')) {
-                    localStorage.removeItem('adminLoggedIn');
-                    window.location.href = 'index.html';
-                }
-            }
-            
-            // 显示加载状态
-            showLoading(containerId) {
-                const container = document.getElementById(containerId);
-                if (container) {
-                    container.classList.add('loading');
-                }
-            }
-            
-            // 隐藏加载状态
-            hideLoading(containerId) {
-                const container = document.getElementById(containerId);
-                if (container) {
-                    container.classList.remove('loading');
-                }
-            }
-            
-            // 显示成功消息
-            showSuccess(message) {
-                alert(message);
-            }
-            
-            // 显示错误消息
-            showError(message) {
-                alert('错误: ' + message);
-            }
-        }
-        
-        // 页面加载完成后启动管理后台
-        document.addEventListener('DOMContentLoaded', () => {
-            window.adminPanel = new AdminPanel();
-        });
-    </script>
 </head>
 <body class="admin-container">
     <aside class="admin-sidebar">
@@ -904,12 +404,12 @@
                     <div class="value income" id="today-income">0.00</div>
                 </div>
                 <div class="stat-card">
-                    <h3>Monetag广告数</h3>
-                    <div class="value" id="monetag-ads">0</div>
+                    <h3>在线用户</h3>
+                    <div class="value users" id="online-users">0</div>
                 </div>
                 <div class="stat-card">
-                    <h3>单次观看收益</h3>
-                    <div class="value income" id="revenue-per-view">0.00</div>
+                    <h3>完成率</h3>
+                    <div class="value" id="completion-rate">0%</div>
                 </div>
             </div>
             
@@ -1127,5 +627,431 @@
             </div>
         </section>
     </main>
+
+    <script>
+        // 简化版本的管理后台JavaScript - 修复初始化问题
+        class AdminPanel {
+            constructor() {
+                this.init();
+            }
+            
+            async init() {
+                try {
+                    console.log('管理后台开始初始化...');
+                    
+                    // 检查管理员登录
+                    await this.checkAdminAuth();
+                    
+                    // 等待一小段时间确保页面完全加载
+                    setTimeout(async () => {
+                        // 初始化事件监听
+                        this.initEventListeners();
+                        
+                        // 加载数据
+                        await this.loadDashboard();
+                        
+                        console.log('管理后台初始化完成');
+                    }, 500);
+                    
+                } catch (error) {
+                    console.error('管理后台初始化失败:', error);
+                    this.showError('系统初始化失败: ' + error.message);
+                }
+            }
+            
+            // 检查管理员认证
+            async checkAdminAuth() {
+                const isLoggedIn = localStorage.getItem('adminLoggedIn');
+                if (!isLoggedIn || isLoggedIn !== 'true') {
+                    window.location.href = 'index.html';
+                    throw new Error('未登录');
+                }
+                console.log('管理员认证通过');
+            }
+            
+            // 初始化事件监听
+            initEventListeners() {
+                console.log('初始化事件监听...');
+                
+                // 导航菜单
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const section = e.target.dataset.section;
+                        this.showSection(section);
+                    });
+                });
+                
+                // 退出登录
+                document.getElementById('logout-btn').addEventListener('click', () => {
+                    this.handleLogout();
+                });
+                
+                // 刷新数据
+                document.getElementById('refresh-btn').addEventListener('click', async () => {
+                    await this.loadDashboard();
+                });
+                
+                // 保存广告按钮
+                document.getElementById('save-ad-btn').addEventListener('click', async () => {
+                    await this.saveAd();
+                });
+                
+                console.log('事件监听初始化完成');
+            }
+            
+            // 显示指定部分
+            showSection(sectionId) {
+                console.log('切换到部分:', sectionId);
+                
+                // 更新导航激活状态
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.classList.remove('active');
+                    if (link.dataset.section === sectionId) {
+                        link.classList.add('active');
+                    }
+                });
+                
+                // 显示对应内容
+                document.querySelectorAll('.section-content').forEach(section => {
+                    section.classList.remove('active');
+                    if (section.id === sectionId) {
+                        section.classList.add('active');
+                    }
+                });
+                
+                // 加载对应部分的数据
+                this.loadSectionData(sectionId);
+            }
+            
+            // 加载部分数据
+            async loadSectionData(sectionId) {
+                try {
+                    switch(sectionId) {
+                        case 'dashboard':
+                            await this.loadDashboard();
+                            break;
+                        case 'ads':
+                            await this.loadAdList();
+                            break;
+                        case 'reports':
+                            await this.loadIncomeReport();
+                            break;
+                    }
+                } catch (error) {
+                    console.error(`加载 ${sectionId} 数据失败:`, error);
+                }
+            }
+            
+            // 加载仪表盘数据
+            async loadDashboard() {
+                try {
+                    console.log('开始加载仪表盘数据...');
+                    
+                    // 显示加载状态
+                    this.showLoading('dashboard');
+                    
+                    // 使用模拟数据，因为adSystem可能未定义
+                    const mockStats = {
+                        totalUsers: 125,
+                        activeUsers: 85,
+                        totalViews: 1250,
+                        totalEarnings: 187.50,
+                        todayViews: 45,
+                        todayEarnings: 6.75,
+                        onlineUsers: 23,
+                        completionRate: '78.5'
+                    };
+                    
+                    // 更新仪表盘数据
+                    document.getElementById('total-users').textContent = mockStats.totalUsers;
+                    document.getElementById('active-users').textContent = mockStats.activeUsers;
+                    document.getElementById('total-views').textContent = mockStats.totalViews;
+                    document.getElementById('total-income').textContent = mockStats.totalEarnings.toFixed(2);
+                    document.getElementById('completion-rate').textContent = `${mockStats.completionRate}%`;
+                    document.getElementById('today-views').textContent = mockStats.todayViews;
+                    document.getElementById('today-income').textContent = mockStats.todayEarnings.toFixed(2);
+                    document.getElementById('online-users').textContent = mockStats.onlineUsers;
+                    
+                    // 更新广告表现表格
+                    await this.updateAdPerformanceTable();
+                    
+                    // 更新收入图表
+                    await this.updateIncomeChart();
+                    
+                    // 隐藏加载状态
+                    this.hideLoading('dashboard');
+                    
+                    console.log('仪表盘数据加载完成');
+                    
+                } catch (error) {
+                    console.error('加载仪表盘数据失败:', error);
+                    this.showError('加载数据失败，请稍后重试');
+                }
+            }
+            
+            // 更新广告表现表格
+            async updateAdPerformanceTable() {
+                const tableBody = document.getElementById('ad-performance-body');
+                if (!tableBody) {
+                    console.error('广告表现表格容器未找到');
+                    return;
+                }
+                
+                // 使用模拟数据
+                const mockAds = [
+                    {
+                        title: "Monetag游戏广告",
+                        totalViews: 350,
+                        completedViews: 275,
+                        completionRate: 78.6,
+                        totalEarnings: 41.25,
+                        currentViews: 350,
+                        maxViews: 1000,
+                        isActive: true
+                    },
+                    {
+                        title: "Monetag电商推广",
+                        totalViews: 280,
+                        completedViews: 210,
+                        completionRate: 75.0,
+                        totalEarnings: 31.50,
+                        currentViews: 280,
+                        maxViews: 800,
+                        isActive: true
+                    }
+                ];
+                
+                tableBody.innerHTML = '';
+                
+                mockAds.forEach((ad, index) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${ad.title}</td>
+                        <td>${ad.totalViews}</td>
+                        <td>${ad.completedViews}</td>
+                        <td>${ad.completionRate}%</td>
+                        <td>${ad.totalEarnings.toFixed(2)}</td>
+                        <td>${ad.currentViews} / ${ad.maxViews}</td>
+                        <td>${ad.isActive ? '启用' : '停用'}</td>
+                        <td>
+                            <button class="btn-small edit-ad" data-id="${index}">编辑</button>
+                            <button class="btn-small toggle-ad" data-id="${index}" data-active="${ad.isActive}">
+                                ${ad.isActive ? '停用' : '启用'}
+                            </button>
+                        </td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+                
+                console.log('广告表现表格更新完成');
+            }
+            
+            // 更新收入图表
+            async updateIncomeChart() {
+                const chartContainer = document.getElementById('income-chart');
+                if (!chartContainer) return;
+                
+                // 模拟最近7天数据
+                const last7Days = [
+                    { date: '2024-01-01', views: 45, earnings: 6.75 },
+                    { date: '2024-01-02', views: 52, earnings: 7.80 },
+                    { date: '2024-01-03', views: 38, earnings: 5.70 },
+                    { date: '2024-01-04', views: 67, earnings: 10.05 },
+                    { date: '2024-01-05', views: 49, earnings: 7.35 },
+                    { date: '2024-01-06', views: 55, earnings: 8.25 },
+                    { date: '2024-01-07', views: 48, earnings: 7.20 }
+                ];
+                
+                let html = '<table class="data-table"><thead><tr><th>日期</th><th>观看次数</th><th>收入(元)</th></tr></thead><tbody>';
+                
+                last7Days.forEach(item => {
+                    html += `<tr>
+                        <td>${item.date}</td>
+                        <td>${item.views}</td>
+                        <td>${item.earnings.toFixed(2)}</td>
+                    </tr>`;
+                });
+                
+                html += '</tbody></table>';
+                chartContainer.innerHTML = html;
+                
+                console.log('收入图表更新完成');
+            }
+            
+            // 保存广告
+            async saveAd() {
+                try {
+                    const formData = {
+                        title: document.getElementById('ad-title').value.trim(),
+                        description: document.getElementById('ad-description').value.trim(),
+                        reward: document.getElementById('ad-reward').value,
+                        duration: document.getElementById('ad-duration').value,
+                        maxViews: document.getElementById('ad-max-views').value,
+                        isActive: document.getElementById('ad-active').checked
+                    };
+                    
+                    // 验证数据
+                    if (!formData.title || !formData.description) {
+                        this.showError('请填写广告标题和描述');
+                        return;
+                    }
+                    
+                    if (formData.reward <= 0 || formData.duration <= 0 || formData.maxViews <= 0) {
+                        this.showError('奖励金额、时长和最大观看次数必须大于0');
+                        return;
+                    }
+                    
+                    // 显示成功消息
+                    this.showSuccess('广告保存成功（演示模式）');
+                    
+                    // 清空表单
+                    document.getElementById('ad-form').reset();
+                    document.getElementById('ad-id').value = '';
+                    
+                } catch (error) {
+                    console.error('保存广告失败:', error);
+                    this.showError('保存失败');
+                }
+            }
+            
+            // 加载广告列表
+            async loadAdList() {
+                try {
+                    const tableBody = document.getElementById('ads-list-body');
+                    
+                    if (!tableBody) {
+                        console.error('广告列表容器未找到');
+                        return;
+                    }
+                    
+                    // 模拟数据
+                    const mockAds = [
+                        {
+                            id: 1,
+                            title: "Monetag游戏广告",
+                            reward: 0.15,
+                            duration: 30,
+                            currentViews: 350,
+                            maxViews: 1000,
+                            isActive: true,
+                            createdAt: '2024-01-01'
+                        },
+                        {
+                            id: 2,
+                            title: "Monetag电商推广",
+                            reward: 0.15,
+                            duration: 25,
+                            currentViews: 280,
+                            maxViews: 800,
+                            isActive: true,
+                            createdAt: '2024-01-02'
+                        }
+                    ];
+                    
+                    tableBody.innerHTML = '';
+                    
+                    mockAds.forEach(ad => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${ad.id}</td>
+                            <td>${ad.title}</td>
+                            <td>${ad.reward.toFixed(2)}</td>
+                            <td>${ad.duration}秒</td>
+                            <td>${ad.currentViews} / ${ad.maxViews}</td>
+                            <td>${ad.isActive ? '启用' : '停用'}</td>
+                            <td>${ad.createdAt}</td>
+                            <td>
+                                <button class="btn-small edit-ad" data-id="${ad.id}">编辑</button>
+                                <button class="btn-small toggle-ad" data-id="${ad.id}" data-active="${ad.isActive}">
+                                    ${ad.isActive ? '停用' : '启用'}
+                                </button>
+                            </td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                    
+                    console.log('广告列表加载完成');
+                    
+                } catch (error) {
+                    console.error('加载广告列表失败:', error);
+                }
+            }
+            
+            // 加载收入报告
+            async loadIncomeReport() {
+                try {
+                    const reportContainer = document.getElementById('report-details');
+                    if (!reportContainer) return;
+                    
+                    // 模拟数据
+                    const mockData = `
+                        <h4>按日期统计</h4>
+                        <table class="data-table">
+                            <thead>
+                                <tr><th>日期</th><th>观看次数</th><th>收入</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>2024-01-01</td><td>45</td><td>6.75</td></tr>
+                                <tr><td>2024-01-02</td><td>52</td><td>7.80</td></tr>
+                                <tr><td>2024-01-03</td><td>38</td><td>5.70</td></tr>
+                                <tr><td>2024-01-04</td><td>67</td><td>10.05</td></tr>
+                            </tbody>
+                        </table>
+                    `;
+                    
+                    reportContainer.innerHTML = mockData;
+                    
+                    // 更新报告摘要
+                    document.getElementById('report-period').textContent = '2024-01-01 至 2024-01-04';
+                    document.getElementById('report-total-income').textContent = '30.30';
+                    document.getElementById('report-total-views').textContent = '202';
+                    
+                } catch (error) {
+                    console.error('加载收入报告失败:', error);
+                }
+            }
+            
+            // 处理退出登录
+            handleLogout() {
+                if (confirm('确定要退出管理员登录吗？')) {
+                    localStorage.removeItem('adminLoggedIn');
+                    window.location.href = 'index.html';
+                }
+            }
+            
+            // 显示加载状态
+            showLoading(sectionId) {
+                const section = document.getElementById(sectionId);
+                if (section) {
+                    section.classList.add('loading');
+                }
+            }
+            
+            // 隐藏加载状态
+            hideLoading(sectionId) {
+                const section = document.getElementById(sectionId);
+                if (section) {
+                    section.classList.remove('loading');
+                }
+            }
+            
+            // 显示成功消息
+            showSuccess(message) {
+                alert('成功: ' + message);
+            }
+            
+            // 显示错误消息
+            showError(message) {
+                alert('错误: ' + message);
+            }
+        }
+        
+        // 页面加载完成后启动管理后台
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM加载完成，启动管理后台...');
+            window.adminPanel = new AdminPanel();
+        });
+    </script>
 </body>
 </html>
