@@ -8,11 +8,6 @@
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9343490874995640" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="db.js"></script>
-    <script src="users.js"></script>
-    <script src="ads.js"></script>
-    <script src="stats.js"></script>
-    <script src="app.js"></script>
 </head>
 <body>
     <!-- 用户登录/注册弹窗 -->
@@ -20,12 +15,12 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h2><i class="fas fa-user"></i> 用户登录</h2>
-                <span class="close">&times;</span>
+                <span class="close" id="close-auth">&times;</span>
             </div>
             <div class="modal-body">
                 <div class="tabs">
-                    <button class="tab-btn active" data-tab="login">登录</button>
-                    <button class="tab-btn" data-tab="register">注册</button>
+                    <button class="tab-btn active" id="login-tab-btn">登录</button>
+                    <button class="tab-btn" id="register-tab-btn">注册</button>
                 </div>
                 
                 <div id="login-tab" class="tab-content active">
@@ -121,7 +116,7 @@
             <div class="container">
                 <p>广告红包平台 &copy; 2024 - 真实广告真实收益</p>
                 <p class="footer-links">
-                    <a href="#" id="admin-login">管理员登录</a> |
+                    <a href="#" id="admin-login-link">管理员登录</a> |
                     <a href="#" id="privacy-policy">隐私政策</a> |
                     <a href="#" id="user-agreement">用户协议</a>
                 </p>
@@ -134,7 +129,7 @@
         <div class="modal-content ad-modal-content">
             <div class="modal-header">
                 <h2><i class="fas fa-ad"></i> 观看广告</h2>
-                <span class="close">&times;</span>
+                <span class="close" id="close-ad-modal">&times;</span>
             </div>
             <div class="modal-body">
                 <div class="ad-info">
@@ -190,7 +185,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h2><i class="fas fa-lock"></i> 管理员登录</h2>
-                <span class="close">&times;</span>
+                <span class="close" id="close-admin-modal">&times;</span>
             </div>
             <div class="modal-body">
                 <div class="form-group">
@@ -205,5 +200,12 @@
             </div>
         </div>
     </div>
+
+    <!-- 引入JavaScript文件 -->
+    <script src="db.js"></script>
+    <script src="users.js"></script>
+    <script src="ads.js"></script>
+    <script src="stats.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
