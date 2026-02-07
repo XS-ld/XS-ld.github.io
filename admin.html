@@ -3,19 +3,306 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>管理后台</title>
+    <title>管理员登录 - 广告平台</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { font-family: Arial; padding: 20px; }
-        .login-box { max-width: 300px; margin: 100px auto; }
-        input { width: 100%; padding: 10px; margin: 10px 0; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .login-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 450px;
+            overflow: hidden;
+        }
+        
+        .login-header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .login-header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .login-header p {
+            opacity: 0.8;
+            font-size: 0.95rem;
+        }
+        
+        .login-body {
+            padding: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .input-group {
+            position: relative;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 15px 15px 15px 50px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        .input-group input:focus {
+            border-color: #667eea;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .input-group i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #888;
+            font-size: 1.2rem;
+        }
+        
+        .login-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .login-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .login-footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        
+        .back-link {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .alert i {
+            margin-right: 10px;
+        }
+        
+        @media (max-width: 480px) {
+            .login-container {
+                border-radius: 15px;
+            }
+            
+            .login-header {
+                padding: 25px;
+            }
+            
+            .login-header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .login-body {
+                padding: 25px;
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="login-box">
-        <h2>管理后台登录</h2>
-        <input type="text" placeholder="管理员账号">
-        <input type="password" placeholder="密码">
-        <button>登录</button>
+    <div class="login-container">
+        <div class="login-header">
+            <h1><i class="fas fa-cog"></i> 管理后台登录</h1>
+            <p>广告平台管理系统</p>
+        </div>
+        
+        <div class="login-body">
+            <!-- 错误提示 -->
+            <div class="alert alert-error" id="error-alert" style="display:none;">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span id="error-message"></span>
+            </div>
+            
+            <!-- 成功提示 -->
+            <div class="alert alert-success" id="success-alert" style="display:none;">
+                <i class="fas fa-check-circle"></i>
+                <span id="success-message"></span>
+            </div>
+            
+            <!-- 登录表单 -->
+            <div class="form-group">
+                <label for="admin-account"><i class="fas fa-user"></i> 管理员账号</label>
+                <div class="input-group">
+                    <i class="fas fa-user-tie"></i>
+                    <input type="text" id="admin-account" placeholder="请输入管理员账号" value="admin">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="admin-password"><i class="fas fa-lock"></i> 管理员密码</label>
+                <div class="input-group">
+                    <i class="fas fa-key"></i>
+                    <input type="password" id="admin-password" placeholder="请输入管理员密码" value="admin123">
+                </div>
+            </div>
+            
+            <button class="login-btn" id="admin-login-btn">
+                <i class="fas fa-sign-in-alt"></i> 登录管理后台
+            </button>
+            
+            <div class="login-footer">
+                <a href="index.html" class="back-link">
+                    <i class="fas fa-arrow-left"></i> 返回主页面
+                </a>
+            </div>
+        </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginBtn = document.getElementById('admin-login-btn');
+            const errorAlert = document.getElementById('error-alert');
+            const successAlert = document.getElementById('success-alert');
+            const errorMessage = document.getElementById('error-message');
+            const successMessage = document.getElementById('success-message');
+            
+            // 默认管理员账号
+            const ADMIN_ACCOUNT = 'admin';
+            const ADMIN_PASSWORD = 'admin123';
+            
+            // 显示错误消息
+            function showError(message) {
+                errorMessage.textContent = message;
+                errorAlert.style.display = 'block';
+                successAlert.style.display = 'none';
+            }
+            
+            // 显示成功消息
+            function showSuccess(message) {
+                successMessage.textContent = message;
+                successAlert.style.display = 'block';
+                errorAlert.style.display = 'none';
+            }
+            
+            // 管理员登录
+            loginBtn.addEventListener('click', function() {
+                const account = document.getElementById('admin-account').value.trim();
+                const password = document.getElementById('admin-password').value.trim();
+                
+                // 验证输入
+                if (!account || !password) {
+                    showError('请输入管理员账号和密码');
+                    return;
+                }
+                
+                // 验证管理员凭据
+                if (account === ADMIN_ACCOUNT && password === ADMIN_PASSWORD) {
+                    showSuccess('登录成功！正在跳转到管理后台...');
+                    
+                    // 保存管理员登录状态
+                    localStorage.setItem('adminToken', 'admin-auth-token-12345');
+                    localStorage.setItem('adminLoggedIn', 'true');
+                    
+                    // 跳转到管理后台
+                    setTimeout(() => {
+                        window.location.href = 'admin.html';
+                    }, 1500);
+                } else {
+                    showError('管理员账号或密码错误');
+                }
+            });
+            
+            // 按Enter键登录
+            document.getElementById('admin-password').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    loginBtn.click();
+                }
+            });
+            
+            // 检查是否已经有登录状态
+            const adminToken = localStorage.getItem('adminToken');
+            if (adminToken === 'admin-auth-token-12345') {
+                // 自动跳转到管理后台
+                setTimeout(() => {
+                    window.location.href = 'admin.html';
+                }, 1000);
+            }
+        });
+    </script>
 </body>
 </html>
