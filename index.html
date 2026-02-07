@@ -4,208 +4,772 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>广告红包 - 真实收益平台</title>
+    <!-- Monetag 验证 -->
     <meta name="monetag" content="971fc7f9c364052405cfa604324c8040">
+    
+    <!-- Google AdSense -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9343490874995640" crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="style.css">
+    
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- 自定义样式 -->
+    <link rel="stylesheet" href="style.css">
+    
+    <style>
+        /* 主页面特定样式 */
+        .mobile-container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+            box-shadow: 0 0 30px rgba(0,0,0,0.1);
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        /* 顶部栏 */
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 15px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logo h1 {
+            font-size: 1.4rem;
+            font-weight: bold;
+        }
+        
+        .logo i {
+            font-size: 1.8rem;
+            color: #ffd700;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .balance-display {
+            background: rgba(255,255,255,0.2);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        
+        /* 统计数据 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        
+        .stat-item {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .stat-item.income .stat-value {
+            color: #2ecc71;
+        }
+        
+        /* 广告列表 */
+        .ads-section {
+            padding: 20px;
+        }
+        
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .ads-container {
+            display: grid;
+            gap: 15px;
+        }
+        
+        .ad-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: 2px solid transparent;
+        }
+        
+        .ad-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            border-color: #667eea;
+        }
+        
+        .ad-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .ad-title {
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: #333;
+        }
+        
+        .ad-reward {
+            background: #ffd700;
+            color: #333;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        
+        .ad-description {
+            color: #666;
+            font-size: 0.95rem;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+        
+        .ad-meta {
+            display: flex;
+            justify-content: space-between;
+            color: #888;
+            font-size: 0.9rem;
+        }
+        
+        .ad-duration {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .ad-views {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .ad-action {
+            margin-top: 15px;
+        }
+        
+        .watch-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+        
+        .watch-btn:hover {
+            opacity: 0.9;
+        }
+        
+        .watch-btn.disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        /* 观看历史 */
+        .history-section {
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        
+        .history-list {
+            display: grid;
+            gap: 10px;
+        }
+        
+        .history-item {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .history-info h4 {
+            margin-bottom: 5px;
+            color: #333;
+        }
+        
+        .history-time {
+            color: #888;
+            font-size: 0.9rem;
+        }
+        
+        .history-amount {
+            font-weight: bold;
+            color: #2ecc71;
+        }
+        
+        .history-amount.failed {
+            color: #e74c3c;
+        }
+        
+        /* 底部导航 */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            max-width: 500px;
+            margin: 0 auto;
+            z-index: 1000;
+        }
+        
+        .nav-item {
+            text-align: center;
+            color: #888;
+            cursor: pointer;
+            transition: color 0.3s;
+            flex: 1;
+        }
+        
+        .nav-item.active {
+            color: #667eea;
+        }
+        
+        .nav-icon {
+            font-size: 1.3rem;
+            margin-bottom: 5px;
+        }
+        
+        .nav-text {
+            font-size: 0.8rem;
+        }
+        
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #888;
+        }
+        
+        .empty-icon {
+            font-size: 3rem;
+            color: #ddd;
+            margin-bottom: 20px;
+        }
+        
+        /* 刷新按钮 */
+        .refresh-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        
+        /* 响应式调整 */
+        @media (max-width: 500px) {
+            .mobile-container {
+                border-radius: 0;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+                padding: 15px;
+            }
+            
+            .stat-item {
+                padding: 12px;
+            }
+            
+            .stat-value {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
 </head>
 <body>
-    <!-- 用户登录/注册弹窗 -->
-    <div id="auth-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2><i class="fas fa-user"></i> 用户登录</h2>
-                <span class="close" id="close-auth">&times;</span>
-            </div>
-            <div class="modal-body">
-                <div class="tabs">
-                    <button class="tab-btn active" id="login-tab-btn">登录</button>
-                    <button class="tab-btn" id="register-tab-btn">注册</button>
+    <div class="mobile-container" id="app-container">
+        <!-- 顶部栏 -->
+        <div class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-gift"></i>
+                    <h1>广告红包</h1>
                 </div>
-                
-                <div id="login-tab" class="tab-content active">
-                    <div class="form-group">
-                        <label for="login-username">手机号</label>
-                        <input type="tel" id="login-username" placeholder="请输入手机号" required>
+                <div class="user-info">
+                    <div class="balance-display" id="user-balance">
+                        <i class="fas fa-wallet"></i> ¥0.00
                     </div>
-                    <div class="form-group">
-                        <label for="login-password">密码</label>
-                        <input type="password" id="login-password" placeholder="请输入密码" required>
-                    </div>
-                    <button id="login-btn" class="btn-primary">登录</button>
-                </div>
-                
-                <div id="register-tab" class="tab-content">
-                    <div class="form-group">
-                        <label for="register-phone">手机号</label>
-                        <input type="tel" id="register-phone" placeholder="请输入手机号" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="register-password">密码</label>
-                        <input type="password" id="register-password" placeholder="请设置密码（6-20位）" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="register-nickname">昵称</label>
-                        <input type="text" id="register-nickname" placeholder="请输入昵称" required>
-                    </div>
-                    <button id="register-btn" class="btn-primary">注册</button>
+                    <button id="logout-btn" class="btn-small" style="display:none;">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
                 </div>
             </div>
         </div>
-    </div>
-
-    <!-- 主界面 -->
-    <div id="main-container" style="display: none;">
-        <header>
-            <div class="container">
-                <div class="header-top">
-                    <div class="logo">
-                        <i class="fas fa-gift"></i>
-                        <span>广告红包</span>
-                    </div>
-                    <div class="user-info" id="user-info">
-                        <span id="user-nickname"></span>
-                        <div class="balance">
-                            <i class="fas fa-coins"></i>
-                            <span id="user-balance">0.00</span>元
-                        </div>
-                        <button id="logout-btn" class="btn-small">退出</button>
-                    </div>
+        
+        <!-- 用户信息 -->
+        <div class="user-section" id="user-section" style="display:none;">
+            <div class="user-card">
+                <div class="user-avatar">
+                    <i class="fas fa-user-circle"></i>
                 </div>
-                
-                <div class="stats-bar">
-                    <div class="stat-item">
-                        <div class="stat-value" id="today-income">0.00</div>
-                        <div class="stat-label">今日收入</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value" id="total-income">0.00</div>
-                        <div class="stat-label">累计收入</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value" id="ads-count">0</div>
-                        <div class="stat-label">今日广告</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value" id="success-rate">0%</div>
-                        <div class="stat-label">完成率</div>
-                    </div>
+                <div class="user-details">
+                    <h3 id="user-nickname">游客</h3>
+                    <p>ID: <span id="user-id">未登录</span></p>
                 </div>
             </div>
-        </header>
-
-        <main class="container">
-            <section class="ads-section">
+        </div>
+        
+        <!-- 统计数据 -->
+        <div class="stats-grid" id="stats-section" style="display:none;">
+            <div class="stat-item income">
+                <div class="stat-value" id="today-income">¥0.00</div>
+                <div class="stat-label">今日收入</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="ads-count">0</div>
+                <div class="stat-label">今日广告</div>
+            </div>
+            <div class="stat-item income">
+                <div class="stat-value" id="total-income">¥0.00</div>
+                <div class="stat-label">累计收入</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="success-rate">0%</div>
+                <div class="stat-label">完成率</div>
+            </div>
+        </div>
+        
+        <!-- 广告列表 -->
+        <div class="ads-section" id="ads-section">
+            <div class="section-title">
                 <h2><i class="fas fa-ad"></i> 可观看广告</h2>
-                <p class="section-subtitle">点击广告观看完整内容获取收益</p>
-                
-                <div class="ads-grid" id="ads-grid">
-                    <!-- 广告列表通过JS动态生成 -->
+                <button id="refresh-ads-btn" class="refresh-btn">
+                    <i class="fas fa-sync-alt"></i> 刷新
+                </button>
+            </div>
+            <div class="ads-container" id="ads-container">
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="fas fa-ad"></i>
+                    </div>
+                    <p>加载广告中...</p>
+                    <p style="font-size:0.9rem;margin-top:10px;">请先登录查看广告</p>
                 </div>
-            </section>
-            
-            <section class="history-section">
+            </div>
+        </div>
+        
+        <!-- 观看历史 -->
+        <div class="history-section" id="history-section" style="display:none;">
+            <div class="section-title">
                 <h2><i class="fas fa-history"></i> 观看记录</h2>
-                <div class="history-list" id="history-list">
-                    <!-- 历史记录通过JS动态生成 -->
-                </div>
-            </section>
-        </main>
-
-        <footer>
-            <div class="container">
-                <p>广告红包平台 &copy; 2024 - 真实广告真实收益</p>
-                <p class="footer-links">
-                    <a href="#" id="admin-login-link">管理员登录</a> |
-                    <a href="#" id="privacy-policy">隐私政策</a> |
-                    <a href="#" id="user-agreement">用户协议</a>
-                </p>
+                <button id="refresh-history-btn" class="refresh-btn">
+                    <i class="fas fa-sync-alt"></i> 刷新
+                </button>
             </div>
-        </footer>
-    </div>
-
-    <!-- 广告观看弹窗 -->
-    <div id="ad-modal" class="modal">
-        <div class="modal-content ad-modal-content">
-            <div class="modal-header">
-                <h2><i class="fas fa-ad"></i> 观看广告</h2>
-                <span class="close" id="close-ad-modal">&times;</span>
-            </div>
-            <div class="modal-body">
-                <div class="ad-info">
-                    <h3 id="ad-title"></h3>
-                    <p class="ad-reward">奖励: <span id="ad-reward-amount">0.15</span>元</p>
-                    <p class="ad-duration">时长: <span id="ad-duration">30</span>秒</p>
-                </div>
-                
-                <div class="ad-container" id="ad-container">
-                    <!-- Monetag广告直接嵌入 -->
-                    <div id="monetag-971fc7f9c364052405cfa604324c8040"></div>
-                    <script type="text/javascript">
-                        (function() {
-                            var script = document.createElement('script');
-                            script.src = "https://api.monetag.com/ads.js";
-                            script.async = true;
-                            document.head.appendChild(script);
-                        })();
-                    </script>
-                </div>
-                
-                <div class="ad-timer">
-                    <div class="timer-bar">
-                        <div class="timer-progress" id="timer-progress"></div>
+            <div class="history-list" id="history-list">
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="fas fa-history"></i>
                     </div>
-                    <div class="timer-text">
-                        剩余时间: <span id="countdown">30</span>秒
-                        <span id="ad-status">等待点击广告开始计时</span>
-                    </div>
-                </div>
-                
-                <div class="ad-actions">
-                    <button id="start-ad-btn" class="btn-primary">点击广告开始计时</button>
-                    <button id="cancel-ad-btn" class="btn-secondary">取消观看</button>
-                    <button id="complete-ad-btn" class="btn-success" style="display: none;">已完成观看</button>
-                </div>
-                
-                <div class="ad-rules">
-                    <p><i class="fas fa-info-circle"></i> 规则说明：</p>
-                    <ul>
-                        <li>必须点击广告并完整观看才能获得奖励</li>
-                        <li>中途关闭广告将无法获得奖励</li>
-                        <li>每个广告只能观看一次</li>
-                        <li>系统会自动检测有效观看</li>
-                    </ul>
+                    <p>暂无观看记录</p>
+                    <p style="font-size:0.9rem;margin-top:10px;">开始观看广告来赚取收益吧！</p>
                 </div>
             </div>
         </div>
-    </div>
-
-    <!-- 管理员登录弹窗 -->
-    <div id="admin-auth-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2><i class="fas fa-lock"></i> 管理员登录</h2>
-                <span class="close" id="close-admin-modal">&times;</span>
+        
+        <!-- 底部导航 -->
+        <div class="bottom-nav">
+            <div class="nav-item active" data-page="ads">
+                <div class="nav-icon"><i class="fas fa-ad"></i></div>
+                <div class="nav-text">广告</div>
             </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label for="admin-account">管理员账号</label>
-                    <input type="text" id="admin-account" placeholder="请输入管理员账号" required>
-                </div>
-                <div class="form-group">
-                    <label for="admin-password">密码</label>
-                    <input type="password" id="admin-password" placeholder="请输入管理员密码" required>
-                </div>
-                <button id="admin-login-btn" class="btn-primary">登录后台</button>
+            <div class="nav-item" data-page="history">
+                <div class="nav-icon"><i class="fas fa-history"></i></div>
+                <div class="nav-text">记录</div>
+            </div>
+            <div class="nav-item" data-page="profile">
+                <div class="nav-icon"><i class="fas fa-user"></i></div>
+                <div class="nav-text">我的</div>
+            </div>
+            <div class="nav-item" data-page="earnings">
+                <div class="nav-icon"><i class="fas fa-chart-line"></i></div>
+                <div class="nav-text">收益</div>
             </div>
         </div>
+        
+        <!-- 页面内容容器 -->
+        <div id="page-container">
+            <!-- 广告页面（默认显示） -->
+            <div id="ads-page" class="page-content active">
+                <!-- 已在上面的ads-section中显示 -->
+            </div>
+            
+            <!-- 历史记录页面 -->
+            <div id="history-page" class="page-content" style="display:none;">
+                <!-- 已在上面的history-section中显示 -->
+            </div>
+            
+            <!-- 个人中心页面 -->
+            <div id="profile-page" class="page-content" style="display:none;">
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                    <p>个人中心功能开发中...</p>
+                    <button id="profile-login-btn" class="watch-btn" style="max-width:200px;margin:20px auto;">
+                        <i class="fas fa-sign-in-alt"></i> 登录/注册
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 收益统计页面 -->
+            <div id="earnings-page" class="page-content" style="display:none;">
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <p>收益统计功能开发中...</p>
+                    <button id="earnings-login-btn" class="watch-btn" style="max-width:200px;margin:20px auto;">
+                        <i class="fas fa-sign-in-alt"></i> 登录查看收益
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 登录注册弹窗 -->
+        <div id="auth-modal" class="modal" style="display:none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3><i class="fas fa-user-circle"></i> 用户登录/注册</h3>
+                    <button class="modal-close" id="close-auth-modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <!-- 标签切换 -->
+                    <div class="tab-nav">
+                        <button class="tab-btn active" data-tab="login">登录</button>
+                        <button class="tab-btn" data-tab="register">注册</button>
+                    </div>
+                    
+                    <!-- 登录表单 -->
+                    <div id="login-form" class="tab-content active">
+                        <div class="form-group">
+                            <label for="login-phone">手机号</label>
+                            <input type="tel" id="login-phone" class="form-control" placeholder="请输入手机号">
+                        </div>
+                        <div class="form-group">
+                            <label for="login-password">密码</label>
+                            <input type="password" id="login-password" class="form-control" placeholder="请输入密码">
+                        </div>
+                        <button id="login-btn" class="btn-primary">
+                            <i class="fas fa-sign-in-alt"></i> 登录
+                        </button>
+                        <p class="form-note">测试账号：手机号随意，密码随意</p>
+                    </div>
+                    
+                    <!-- 注册表单 -->
+                    <div id="register-form" class="tab-content">
+                        <div class="form-group">
+                            <label for="register-phone">手机号</label>
+                            <input type="tel" id="register-phone" class="form-control" placeholder="请输入手机号">
+                        </div>
+                        <div class="form-group">
+                            <label for="register-password">密码</label>
+                            <input type="password" id="register-password" class="form-control" placeholder="请输入密码（6-20位）">
+                        </div>
+                        <div class="form-group">
+                            <label for="register-nickname">昵称</label>
+                            <input type="text" id="register-nickname" class="form-control" placeholder="请输入昵称">
+                        </div>
+                        <button id="register-btn" class="btn-primary">
+                            <i class="fas fa-user-plus"></i> 注册
+                        </button>
+                    </div>
+                    
+                    <div class="admin-link">
+                        <a href="admin-login.html" id="admin-login-link">
+                            <i class="fas fa-cog"></i> 管理员登录
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 广告观看弹窗 -->
+        <div id="ad-modal" class="modal" style="display:none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3><i class="fas fa-play-circle"></i> 观看广告赚收益</h3>
+                    <button class="modal-close" id="close-ad-modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="ad-view-container">
+                        <!-- 广告信息 -->
+                        <div class="ad-info-card">
+                            <div class="ad-title" id="ad-modal-title">广告标题</div>
+                            <div class="ad-reward" id="ad-modal-reward">¥0.00</div>
+                        </div>
+                        
+                        <!-- 广告内容容器 -->
+                        <div id="ad-content-container" class="ad-content-container">
+                            <div class="ad-loading">
+                                <i class="fas fa-sync fa-spin"></i>
+                                <p>正在加载广告...</p>
+                            </div>
+                        </div>
+                        
+                        <!-- 广告计时器 -->
+                        <div class="ad-timer">
+                            <div class="timer-progress">
+                                <div class="timer-bar" id="timer-progress"></div>
+                            </div>
+                            <div class="timer-info">
+                                <span>剩余时间: <span id="countdown">30</span>秒</span>
+                                <span>状态: <span id="ad-status">等待点击</span></span>
+                            </div>
+                        </div>
+                        
+                        <!-- 广告说明 -->
+                        <div class="ad-instructions">
+                            <h4><i class="fas fa-info-circle"></i> 观看说明：</h4>
+                            <ol>
+                                <li>点击广告开始计时</li>
+                                <li>观看完整广告内容</li>
+                                <li>不要关闭页面</li>
+                                <li>计时结束后自动获得奖励</li>
+                            </ol>
+                        </div>
+                        
+                        <!-- 广告操作按钮 -->
+                        <div class="ad-actions">
+                            <button id="complete-ad-btn" class="btn-success" style="display:none;">
+                                <i class="fas fa-check-circle"></i> 完成观看
+                            </button>
+                            <button id="cancel-ad-btn" class="btn-secondary">
+                                <i class="fas fa-times-circle"></i> 取消观看
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 消息提示 -->
+        <div id="message-container" class="message-container"></div>
     </div>
 
-    <!-- 引入JavaScript文件 -->
+    <!-- JavaScript 文件 -->
     <script src="db.js"></script>
     <script src="users.js"></script>
     <script src="ads.js"></script>
     <script src="stats.js"></script>
     <script src="app.js"></script>
+    
+    <script>
+        // 页面初始化脚本
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('页面加载完成');
+            
+            // 底部导航切换
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const page = this.dataset.page;
+                    
+                    // 更新导航状态
+                    document.querySelectorAll('.nav-item').forEach(nav => {
+                        nav.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                    
+                    // 显示对应页面
+                    document.querySelectorAll('.page-content').forEach(content => {
+                        content.style.display = 'none';
+                    });
+                    
+                    const pageElement = document.getElementById(page + '-page');
+                    if (pageElement) {
+                        pageElement.style.display = 'block';
+                    }
+                    
+                    // 如果是广告页面，显示广告部分
+                    if (page === 'ads') {
+                        document.getElementById('ads-section').style.display = 'block';
+                        document.getElementById('history-section').style.display = 'none';
+                    } else if (page === 'history') {
+                        document.getElementById('ads-section').style.display = 'none';
+                        document.getElementById('history-section').style.display = 'block';
+                    }
+                });
+            });
+            
+            // 刷新广告按钮
+            document.getElementById('refresh-ads-btn').addEventListener('click', function() {
+                if (window.app && window.app.loadAds) {
+                    window.app.loadAds();
+                    showMessage('正在刷新广告列表...', 'info');
+                }
+            });
+            
+            // 刷新历史按钮
+            document.getElementById('refresh-history-btn').addEventListener('click', function() {
+                if (window.app && window.app.loadHistory) {
+                    window.app.loadHistory();
+                    showMessage('正在刷新观看记录...', 'info');
+                }
+            });
+            
+            // 关闭弹窗
+            document.getElementById('close-auth-modal').addEventListener('click', function() {
+                document.getElementById('auth-modal').style.display = 'none';
+            });
+            
+            document.getElementById('close-ad-modal').addEventListener('click', function() {
+                document.getElementById('ad-modal').style.display = 'none';
+                if (window.adSystem && window.adSystem.cancelAdView) {
+                    window.adSystem.cancelAdView();
+                }
+            });
+            
+            // 登录按钮
+            document.getElementById('login-btn').addEventListener('click', function() {
+                if (window.app && window.app.handleLogin) {
+                    window.app.handleLogin();
+                }
+            });
+            
+            // 注册按钮
+            document.getElementById('register-btn').addEventListener('click', function() {
+                if (window.app && window.app.handleRegister) {
+                    window.app.handleRegister();
+                }
+            });
+            
+            // 完成广告按钮
+            document.getElementById('complete-ad-btn').addEventListener('click', async function() {
+                if (window.adSystem && window.adSystem.onAdCompleted) {
+                    const result = await window.adSystem.onAdCompleted();
+                    if (result && result.success) {
+                        showMessage(`恭喜！获得${result.reward}元奖励`, 'success');
+                        document.getElementById('ad-modal').style.display = 'none';
+                        
+                        // 刷新用户数据和广告列表
+                        if (window.app && window.app.loadUserData) {
+                            window.app.loadUserData();
+                        }
+                        if (window.app && window.app.loadAds) {
+                            window.app.loadAds();
+                        }
+                        if (window.app && window.app.loadHistory) {
+                            window.app.loadHistory();
+                        }
+                    } else {
+                        showMessage(result ? result.message : '完成观看失败', 'error');
+                    }
+                }
+            });
+            
+            // 取消广告按钮
+            document.getElementById('cancel-ad-btn').addEventListener('click', function() {
+                document.getElementById('ad-modal').style.display = 'none';
+                if (window.adSystem && window.adSystem.cancelAdView) {
+                    window.adSystem.cancelAdView();
+                }
+            });
+            
+            // 标签切换
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const tab = this.dataset.tab;
+                    
+                    // 更新按钮状态
+                    document.querySelectorAll('.tab-btn').forEach(t => {
+                        t.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                    
+                    // 显示对应表单
+                    document.querySelectorAll('.tab-content').forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    document.getElementById(tab + '-form').classList.add('active');
+                });
+            });
+            
+            // 显示消息函数
+            window.showMessage = function(message, type = 'info') {
+                const container = document.getElementById('message-container');
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${type}`;
+                messageDiv.innerHTML = `
+                    <div class="message-content">
+                        <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'times-circle' : 'info-circle'}"></i>
+                        <span>${message}</span>
+                    </div>
+                `;
+                
+                container.appendChild(messageDiv);
+                
+                // 3秒后移除消息
+                setTimeout(() => {
+                    messageDiv.classList.add('fade-out');
+                    setTimeout(() => {
+                        if (messageDiv.parentNode) {
+                            messageDiv.parentNode.removeChild(messageDiv);
+                        }
+                    }, 300);
+                }, 3000);
+            };
+        });
+    </script>
 </body>
 </html>

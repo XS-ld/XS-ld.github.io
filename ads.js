@@ -83,6 +83,11 @@ class AdSystem {
             this.adClicked = false;
             this.adCompleted = false;
             
+            // 初始化广告容器
+            if (!this.adContainer) {
+                this.initAdContainer('ad-content-container');
+            }
+            
             // 显示广告内容
             this.displayAdContent(ad);
             
@@ -103,75 +108,57 @@ class AdSystem {
         }
     }
     
-    // 显示广告内容 - 直接嵌入Monetag广告代码
+    // 显示广告内容
     displayAdContent(ad) {
         if (!this.adContainer) return;
         
         // 清空容器
         this.adContainer.innerHTML = '';
         
-        // 直接嵌入Monetag广告代码
-        const monetagCode = `
-            <!-- Monetag广告代码开始 -->
-            <div id="monetag-971fc7f9c364052405cfa604324c8040"></div>
-            <script type="text/javascript">
-                (function() {
-                    var script = document.createElement('script');
-                    script.src = "https://api.monetag.com/ads.js";
-                    script.async = true;
-                    document.head.appendChild(script);
-                })();
-            </script>
-            <!-- Monetag广告代码结束 -->
+        // 创建广告展示区域
+        const adContent = document.createElement('div');
+        adContent.className = 'ad-display';
+        
+        // 模拟广告内容（实际应该嵌入真实广告代码）
+        adContent.innerHTML = `
+            <div class="ad-preview">
+                <div class="ad-image">
+                    <i class="fas fa-ad" style="font-size: 3rem; color: #667eea;"></i>
+                </div>
+                <div class="ad-text">
+                    <h3>${ad.title}</h3>
+                    <p>${ad.description}</p>
+                    <p class="ad-note">请点击下方按钮或广告内容开始观看</p>
+                </div>
+            </div>
+            <div class="ad-click-area" id="ad-click-area">
+                <button class="btn-primary" id="start-ad-btn">
+                    <i class="fas fa-play-circle"></i> 点击开始观看广告
+                </button>
+                <p class="ad-hint">点击后请耐心等待广告加载完成</p>
+            </div>
         `;
         
-        this.adContainer.innerHTML = monetagCode;
+        this.adContainer.appendChild(adContent);
         
-        // 添加广告点击追踪
-        this.addAdClickTracking();
-        
-        // 更新弹窗中的广告信息
-        this.updateAdInfoInModal(ad);
-    }
-    
-    // 添加广告点击追踪
-    addAdClickTracking() {
-        if (!this.adContainer) return;
-        
-        // 延迟执行，等待广告加载完成
+        // 添加点击事件
         setTimeout(() => {
-            // 为所有链接添加点击追踪
-            const links = this.adContainer.getElementsByTagName('a');
-            for (let link of links) {
-                link.addEventListener('click', () => {
+            const clickArea = document.getElementById('ad-click-area');
+            const startBtn = document.getElementById('start-ad-btn');
+            
+            if (clickArea) {
+                clickArea.addEventListener('click', () => {
                     this.onAdClick();
                 });
             }
             
-            // 为所有按钮添加点击追踪
-            const buttons = this.adContainer.getElementsByTagName('button');
-            for (let button of buttons) {
-                button.addEventListener('click', () => {
+            if (startBtn) {
+                startBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
                     this.onAdClick();
                 });
             }
-            
-            // 为所有图片添加点击追踪
-            const images = this.adContainer.getElementsByTagName('img');
-            for (let image of images) {
-                image.addEventListener('click', () => {
-                    this.onAdClick();
-                });
-            }
-            
-            // 为整个广告容器添加点击追踪
-            this.adContainer.addEventListener('click', (e) => {
-                if (e.target === this.adContainer) {
-                    this.onAdClick();
-                }
-            });
-            
-        }, 1000); // 延迟1秒确保广告加载完成
+        }, 100);
     }
     
     // 广告被点击
@@ -187,39 +174,30 @@ class AdSystem {
                 statusElement.style.color = '#2ecc71';
             }
             
-            // 启用完成按钮
+            // 显示完成按钮
             const completeBtn = document.getElementById('complete-ad-btn');
             if (completeBtn) {
                 completeBtn.style.display = 'inline-block';
+            }
+            
+            // 更新广告显示
+            if (this.adContainer) {
+                this.adContainer.innerHTML = `
+                    <div class="ad-watching">
+                        <div class="ad-loading">
+                            <i class="fas fa-sync fa-spin" style="font-size: 2rem; color: #667eea;"></i>
+                            <p>广告播放中，请勿关闭页面...</p>
+                            <p class="ad-warning">请保持页面打开，直到倒计时结束</p>
+                        </div>
+                    </div>
+                `;
             }
             
             // 开始倒计时
             this.startCountdown();
             
             console.log('广告被点击，开始计时');
-            
-            // 记录广告点击
-            this.logAdClick();
         }
-    }
-    
-    // 记录广告点击
-    logAdClick() {
-        if (!this.currentAd || !window.userSystem.currentUser) return;
-        
-        // 这里可以发送点击统计到服务器
-        console.log(`广告点击记录: 用户 ${window.userSystem.currentUser.id}, 广告 ${this.currentAd.id}`);
-    }
-    
-    // 更新弹窗中的广告信息
-    updateAdInfoInModal(ad) {
-        const titleElement = document.getElementById('ad-title');
-        const rewardElement = document.getElementById('ad-reward-amount');
-        const durationElement = document.getElementById('ad-duration');
-        
-        if (titleElement) titleElement.textContent = ad.title;
-        if (rewardElement) rewardElement.textContent = ad.reward.toFixed(2);
-        if (durationElement) durationElement.textContent = ad.duration;
     }
     
     // 初始化计时器
@@ -247,6 +225,12 @@ class AdSystem {
             statusElement.textContent = '等待点击广告开始计时';
             statusElement.style.color = '#e74c3c';
         }
+        
+        // 隐藏完成按钮
+        const completeBtn = document.getElementById('complete-ad-btn');
+        if (completeBtn) {
+            completeBtn.style.display = 'none';
+        }
     }
     
     // 开始倒计时
@@ -271,6 +255,15 @@ class AdSystem {
             if (progressBar) {
                 const progress = ((this.adDuration - timeLeft) / this.adDuration) * 100;
                 progressBar.style.width = `${progress}%`;
+                
+                // 根据进度改变颜色
+                if (progress < 50) {
+                    progressBar.style.background = '#e74c3c';
+                } else if (progress < 80) {
+                    progressBar.style.background = '#f39c12';
+                } else {
+                    progressBar.style.background = '#2ecc71';
+                }
             }
             
             if (timeLeft <= 0) {
@@ -300,7 +293,7 @@ class AdSystem {
             await this.recordAdView(userId, adId, true);
             
             // 给用户添加收益
-            await userSystem.addUserEarnings(userId, this.currentAd.reward, adId);
+            await window.userSystem.addUserEarnings(userId, this.currentAd.reward, adId);
             
             // 更新广告观看次数
             await this.updateAdViews(adId);
@@ -314,10 +307,19 @@ class AdSystem {
                 statusElement.style.color = '#2ecc71';
             }
             
-            // 通知用户
-            this.showCompletionMessage();
-            
-            console.log('广告观看完成，奖励已发放');
+            // 显示完成界面
+            if (this.adContainer) {
+                this.adContainer.innerHTML = `
+                    <div class="ad-completed">
+                        <div class="success-icon">
+                            <i class="fas fa-check-circle" style="font-size: 3rem; color: #2ecc71;"></i>
+                        </div>
+                        <h3>恭喜！广告观看完成</h3>
+                        <p class="reward-amount">获得奖励: ¥${this.currentAd.reward.toFixed(2)}</p>
+                        <p class="ad-thanks">感谢您的观看！</p>
+                    </div>
+                `;
+            }
             
             return {
                 success: true,
@@ -377,12 +379,6 @@ class AdSystem {
         } catch (error) {
             console.error('更新广告观看次数失败:', error);
         }
-    }
-    
-    // 显示完成消息
-    showCompletionMessage() {
-        const message = `恭喜！您已成功观看广告，获得 ${this.currentAd.reward} 元奖励！`;
-        alert(message);
     }
     
     // 取消观看
@@ -508,67 +504,6 @@ class AdSystem {
             
         } catch (error) {
             console.error('获取广告统计失败:', error);
-            return null;
-        }
-    }
-    
-    // 获取平台统计数据
-    async getPlatformStats() {
-        try {
-            const today = new Date().toISOString().split('T')[0];
-            
-            // 获取今日统计
-            const todayStat = await DatabaseService.statDB.getByIndex('date', today);
-            
-            // 获取用户总数
-            const users = await DatabaseService.userDB.getAll();
-            
-            // 获取总收益
-            const earnings = await DatabaseService.earningDB.getAll();
-            const totalEarnings = earnings.reduce((sum, e) => sum + e.amount, 0);
-            
-            // 获取总观看次数
-            const records = await DatabaseService.recordDB.getAll();
-            const completedRecords = records.filter(r => r.completed);
-            
-            // 获取最近7天数据
-            const last7Days = [];
-            for (let i = 6; i >= 0; i--) {
-                const date = new Date();
-                date.setDate(date.getDate() - i);
-                const dateStr = date.toISOString().split('T')[0];
-                
-                // 获取该日期的记录
-                const dayRecords = records.filter(r => r.viewedAt.startsWith(dateStr));
-                const dayCompleted = dayRecords.filter(r => r.completed);
-                
-                last7Days.push({
-                    date: dateStr,
-                    views: dayRecords.length,
-                    earnings: dayCompleted.reduce((sum, r) => sum + r.reward, 0)
-                });
-            }
-            
-            return {
-                totalUsers: users.length,
-                activeUsers: users.filter(u => {
-                    const lastActive = new Date(u.lastActive);
-                    const daysSinceActive = (new Date() - lastActive) / (1000 * 60 * 60 * 24);
-                    return daysSinceActive < 7;
-                }).length,
-                totalViews: records.length,
-                completedViews: completedRecords.length,
-                totalEarnings: totalEarnings,
-                todayViews: todayStat ? todayStat.totalViews : 0,
-                todayEarnings: todayStat ? todayStat.totalEarnings : 0,
-                completionRate: records.length > 0 ? (completedRecords.length / records.length * 100).toFixed(1) : 0,
-                last7Days: last7Days,
-                monetagAds: records.filter(r => r.adType === 'monetag').length,
-                revenuePerView: completedRecords.length > 0 ? (totalEarnings / completedRecords.length).toFixed(2) : 0
-            };
-            
-        } catch (error) {
-            console.error('获取平台统计失败:', error);
             return null;
         }
     }

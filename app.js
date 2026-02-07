@@ -15,11 +15,11 @@ class AdRewardApp {
             // 初始化默认数据
             await DatabaseService.initDefaultData();
             
-            // 初始化事件监听
-            this.initEventListeners();
-            
             // 检查用户登录状态
             this.checkAuthStatus();
+            
+            // 初始化事件监听
+            this.initEventListeners();
             
             console.log('应用程序初始化完成');
             
@@ -31,7 +31,7 @@ class AdRewardApp {
     
     // 检查认证状态
     checkAuthStatus() {
-        if (window.userSystem.isLoggedIn) {
+        if (window.userSystem && window.userSystem.isLoggedIn) {
             console.log('用户已登录，显示主界面');
             this.showMainInterface();
             this.loadUserData();
@@ -45,14 +45,59 @@ class AdRewardApp {
     
     // 显示认证弹窗
     showAuthModal() {
-        document.getElementById('auth-modal').style.display = 'flex';
-        document.getElementById('main-container').style.display = 'none';
+        const modal = document.getElementById('auth-modal');
+        if (modal) modal.style.display = 'flex';
+        
+        // 显示登录表单
+        this.showLoginForm();
+    }
+    
+    // 隐藏认证弹窗
+    hideAuthModal() {
+        const modal = document.getElementById('auth-modal');
+        if (modal) modal.style.display = 'none';
     }
     
     // 显示主界面
     showMainInterface() {
-        document.getElementById('auth-modal').style.display = 'none';
-        document.getElementById('main-container').style.display = 'block';
+        this.hideAuthModal();
+        
+        // 显示用户信息
+        const userSection = document.getElementById('user-section');
+        const statsSection = document.getElementById('stats-section');
+        const historySection = document.getElementById('history-section');
+        const logoutBtn = document.getElementById('logout-btn');
+        
+        if (userSection) userSection.style.display = 'block';
+        if (statsSection) statsSection.style.display = 'grid';
+        if (historySection) historySection.style.display = 'block';
+        if (logoutBtn) logoutBtn.style.display = 'block';
+    }
+    
+    // 显示登录表单
+    showLoginForm() {
+        const loginForm = document.getElementById('login-form');
+        const registerForm = document.getElementById('register-form');
+        const loginTab = document.querySelector('.tab-btn[data-tab="login"]');
+        const registerTab = document.querySelector('.tab-btn[data-tab="register"]');
+        
+        if (loginForm) loginForm.classList.add('active');
+        if (registerForm) registerForm.classList.remove('active');
+        if (loginTab) loginTab.classList.add('active');
+        if (registerTab) registerTab.classList.remove('active');
+    }
+    
+    // 显示注册表单
+    showRegisterForm() {
+        const loginForm = document.getElementById('login-form');
+        const registerForm = document.getElementById('register-form');
+        const loginTab = document.querySelector('.tab-btn[data-tab="login"]');
+        const registerTab = document.querySelector('.tab-btn[data-tab="register"]');
+        
+        if (loginForm) loginForm.classList.remove('active');
+        if (registerForm) registerForm.classList.add('active');
+        if (loginTab) loginTab.classList.remove('active');
+        if (registerTab) registerTab.classList.add('active');
     }
     
     // 初始化事件监听
@@ -60,106 +105,70 @@ class AdRewardApp {
         console.log('初始化事件监听...');
         
         // 登录标签页切换
-        document.getElementById('login-tab-btn').addEventListener('click', (e) => {
-            this.switchTab('login');
-        });
+        const loginTabBtn = document.getElementById('login-tab-btn');
+        const registerTabBtn = document.getElementById('register-tab-btn');
         
-        document.getElementById('register-tab-btn').addEventListener('click', (e) => {
-            this.switchTab('register');
-        });
+        if (loginTabBtn) {
+            loginTabBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.showLoginForm();
+            });
+        }
         
-        // 关闭按钮
-        document.getElementById('close-auth').addEventListener('click', () => {
-            this.closeModal('auth-modal');
-        });
-        
-        document.getElementById('close-ad-modal').addEventListener('click', () => {
-            this.closeModal('ad-modal');
-        });
-        
-        document.getElementById('close-admin-modal').addEventListener('click', () => {
-            this.closeModal('admin-auth-modal');
-        });
+        if (registerTabBtn) {
+            registerTabBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.showRegisterForm();
+            });
+        }
         
         // 登录按钮
-        document.getElementById('login-btn').addEventListener('click', () => {
-            this.handleLogin();
-        });
+        const loginBtn = document.getElementById('login-btn');
+        if (loginBtn) {
+            loginBtn.addEventListener('click', () => {
+                this.handleLogin();
+            });
+        }
         
         // 注册按钮
-        document.getElementById('register-btn').addEventListener('click', () => {
-            this.handleRegister();
-        });
+        const registerBtn = document.getElementById('register-btn');
+        if (registerBtn) {
+            registerBtn.addEventListener('click', () => {
+                this.handleRegister();
+            });
+        }
         
         // 退出按钮
-        document.getElementById('logout-btn').addEventListener('click', () => {
-            this.handleLogout();
-        });
+        const logoutBtn = document.getElementById('logout-btn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', () => {
+                this.handleLogout();
+            });
+        }
         
-        // 管理员登录链接
-        document.getElementById('admin-login-link').addEventListener('click', (e) => {
-            e.preventDefault();
-            this.showAdminLoginModal();
-        });
+        // 个人中心登录按钮
+        const profileLoginBtn = document.getElementById('profile-login-btn');
+        if (profileLoginBtn) {
+            profileLoginBtn.addEventListener('click', () => {
+                this.showAuthModal();
+            });
+        }
         
-        // 管理员登录按钮
-        document.getElementById('admin-login-btn').addEventListener('click', () => {
-            this.handleAdminLogin();
-        });
-        
-        // 广告操作按钮
-        document.getElementById('start-ad-btn').addEventListener('click', () => {
-            adSystem.onAdClick();
-        });
-        
-        document.getElementById('complete-ad-btn').addEventListener('click', async () => {
-            const result = await adSystem.onAdCompleted();
-            if (result.success) {
-                this.showSuccess(`恭喜！获得${result.reward}元奖励`);
-                await this.loadUserData();
-                await this.loadAds();
-                await this.loadHistory();
-                this.closeModal('ad-modal');
-            } else {
-                this.showError(result.message);
-            }
-        });
-        
-        document.getElementById('cancel-ad-btn').addEventListener('click', () => {
-            adSystem.cancelAdView();
-            this.closeModal('ad-modal');
-        });
+        // 收益页面登录按钮
+        const earningsLoginBtn = document.getElementById('earnings-login-btn');
+        if (earningsLoginBtn) {
+            earningsLoginBtn.addEventListener('click', () => {
+                this.showAuthModal();
+            });
+        }
         
         console.log('事件监听初始化完成');
     }
     
-    // 切换标签页
-    switchTab(tabName) {
-        // 更新按钮状态
-        document.getElementById('login-tab-btn').classList.remove('active');
-        document.getElementById('register-tab-btn').classList.remove('active');
-        
-        if (tabName === 'login') {
-            document.getElementById('login-tab-btn').classList.add('active');
-        } else {
-            document.getElementById('register-tab-btn').classList.add('active');
-        }
-        
-        // 更新内容显示
-        document.getElementById('login-tab').classList.remove('active');
-        document.getElementById('register-tab').classList.remove('active');
-        
-        if (tabName === 'login') {
-            document.getElementById('login-tab').classList.add('active');
-        } else {
-            document.getElementById('register-tab').classList.add('active');
-        }
-    }
-    
     // 处理用户登录
     async handleLogin() {
-        const phone = document.getElementById('login-username').value.trim();
-        const password = document.getElementById('login-password').value.trim();
+        const phone = document.getElementById('login-phone') ? document.getElementById('login-phone').value.trim() : '';
+        const password = document.getElementById('login-password') ? document.getElementById('login-password').value.trim() : '';
         
         if (!phone) {
             this.showError('请输入手机号');
@@ -174,6 +183,11 @@ class AdRewardApp {
         console.log('尝试登录:', phone);
         
         try {
+            if (!window.userSystem) {
+                this.showError('用户系统未初始化');
+                return;
+            }
+            
             const result = await window.userSystem.login(phone, password);
             
             if (result.success) {
@@ -182,6 +196,7 @@ class AdRewardApp {
                 await this.loadUserData();
                 await this.loadAds();
                 await this.loadHistory();
+                this.hideAuthModal();
             } else {
                 this.showError(result.message);
             }
@@ -194,9 +209,9 @@ class AdRewardApp {
     
     // 处理用户注册
     async handleRegister() {
-        const phone = document.getElementById('register-phone').value.trim();
-        const password = document.getElementById('register-password').value.trim();
-        const nickname = document.getElementById('register-nickname').value.trim();
+        const phone = document.getElementById('register-phone') ? document.getElementById('register-phone').value.trim() : '';
+        const password = document.getElementById('register-password') ? document.getElementById('register-password').value.trim() : '';
+        const nickname = document.getElementById('register-nickname') ? document.getElementById('register-nickname').value.trim() : '';
         
         if (!phone || !password || !nickname) {
             this.showError('请填写所有必填项');
@@ -206,6 +221,11 @@ class AdRewardApp {
         console.log('尝试注册:', phone, nickname);
         
         try {
+            if (!window.userSystem) {
+                this.showError('用户系统未初始化');
+                return;
+            }
+            
             const result = await window.userSystem.register({
                 phone,
                 password,
@@ -222,6 +242,7 @@ class AdRewardApp {
                     await this.loadUserData();
                     await this.loadAds();
                     await this.loadHistory();
+                    this.hideAuthModal();
                 }
             } else {
                 this.showError(result.message);
@@ -236,57 +257,92 @@ class AdRewardApp {
     // 处理用户退出
     handleLogout() {
         if (confirm('确定要退出登录吗？')) {
-            window.userSystem.logout();
+            if (window.userSystem) {
+                window.userSystem.logout();
+            }
+            
+            // 清空显示数据
+            this.clearUserData();
+            this.clearAds();
+            this.clearHistory();
+            
+            // 显示登录弹窗
             this.showAuthModal();
-            this.clearFormData();
+            
             this.showSuccess('已成功退出登录');
         }
     }
     
-    // 显示管理员登录弹窗
-    showAdminLoginModal() {
-        document.getElementById('admin-auth-modal').style.display = 'flex';
-    }
-    
-    // 处理管理员登录
-    async handleAdminLogin() {
-        const account = document.getElementById('admin-account').value.trim();
-        const password = document.getElementById('admin-password').value.trim();
+    // 清空用户数据显示
+    clearUserData() {
+        const elements = {
+            'user-nickname': '游客',
+            'user-id': '未登录',
+            'user-balance': '¥0.00',
+            'today-income': '¥0.00',
+            'ads-count': '0',
+            'total-income': '¥0.00',
+            'success-rate': '0%'
+        };
         
-        if (!account || !password) {
-            this.showError('请输入管理员账号和密码');
-            return;
+        for (const [id, value] of Object.entries(elements)) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.textContent = value;
+            }
         }
         
-        try {
-            // 验证管理员账号
-            const admin = await DatabaseService.adminDB.getByIndex('username', account);
-            
-            if (!admin || admin.password !== password) {
-                this.showError('管理员账号或密码错误');
-                return;
-            }
-            
-            // 更新最后登录时间
-            await DatabaseService.adminDB.update(admin.id, {
-                lastLogin: new Date().toISOString()
-            });
-            
-            // 保存登录状态
-            localStorage.setItem('adminLoggedIn', 'true');
-            
-            // 跳转到管理后台
-            window.location.href = 'admin.html';
-            
-        } catch (error) {
-            console.error('管理员登录失败:', error);
-            this.showError('登录失败，请稍后重试');
+        // 隐藏用户信息部分
+        const userSection = document.getElementById('user-section');
+        const statsSection = document.getElementById('stats-section');
+        const historySection = document.getElementById('history-section');
+        const logoutBtn = document.getElementById('logout-btn');
+        
+        if (userSection) userSection.style.display = 'none';
+        if (statsSection) statsSection.style.display = 'none';
+        if (historySection) historySection.style.display = 'none';
+        if (logoutBtn) logoutBtn.style.display = 'none';
+    }
+    
+    // 清空广告列表
+    clearAds() {
+        const adsContainer = document.getElementById('ads-container');
+        if (adsContainer) {
+            adsContainer.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="fas fa-ad"></i>
+                    </div>
+                    <p>请登录查看广告</p>
+                    <button onclick="app.showAuthModal()" class="watch-btn" style="max-width:200px;margin:20px auto;">
+                        <i class="fas fa-sign-in-alt"></i> 登录查看广告
+                    </button>
+                </div>
+            `;
+        }
+    }
+    
+    // 清空观看历史
+    clearHistory() {
+        const historyList = document.getElementById('history-list');
+        if (historyList) {
+            historyList.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="fas fa-history"></i>
+                    </div>
+                    <p>请登录查看观看记录</p>
+                    <button onclick="app.showAuthModal()" class="watch-btn" style="max-width:200px;margin:20px auto;">
+                        <i class="fas fa-sign-in-alt"></i> 登录查看记录
+                    </button>
+                </div>
+            `;
         }
     }
     
     // 加载用户数据
     async loadUserData() {
-        if (!window.userSystem.isLoggedIn) {
+        if (!window.userSystem || !window.userSystem.isLoggedIn) {
             console.log('用户未登录，跳过加载用户数据');
             return;
         }
@@ -296,17 +352,29 @@ class AdRewardApp {
         const user = window.userSystem.currentUser;
         
         // 更新用户信息显示
-        document.getElementById('user-nickname').textContent = user.username;
-        document.getElementById('user-balance').textContent = (user.balance || 0).toFixed(2);
+        const nicknameElement = document.getElementById('user-nickname');
+        const idElement = document.getElementById('user-id');
+        const balanceElement = document.getElementById('user-balance');
+        
+        if (nicknameElement) nicknameElement.textContent = user.username || '用户';
+        if (idElement) idElement.textContent = user.id ? `ID: ${user.id}` : 'ID: 未登录';
+        if (balanceElement) balanceElement.innerHTML = `<i class="fas fa-wallet"></i> ¥${(user.balance || 0).toFixed(2)}`;
         
         // 获取最新统计数据
-        const stats = await window.userSystem.getUserStats(user.id);
-        
-        if (stats) {
-            document.getElementById('today-income').textContent = stats.todayEarnings.toFixed(2);
-            document.getElementById('total-income').textContent = stats.totalEarnings.toFixed(2);
-            document.getElementById('ads-count').textContent = stats.todayViews;
-            document.getElementById('success-rate').textContent = `${stats.successRate}%`;
+        if (window.userSystem.getUserStats) {
+            const stats = await window.userSystem.getUserStats(user.id);
+            
+            if (stats) {
+                const todayIncomeElement = document.getElementById('today-income');
+                const adsCountElement = document.getElementById('ads-count');
+                const totalIncomeElement = document.getElementById('total-income');
+                const successRateElement = document.getElementById('success-rate');
+                
+                if (todayIncomeElement) todayIncomeElement.textContent = `¥${stats.todayEarnings.toFixed(2)}`;
+                if (adsCountElement) adsCountElement.textContent = stats.todayViews;
+                if (totalIncomeElement) totalIncomeElement.textContent = `¥${stats.totalEarnings.toFixed(2)}`;
+                if (successRateElement) successRateElement.textContent = `${stats.successRate}%`;
+            }
         }
         
         console.log('用户数据加载完成');
@@ -314,7 +382,7 @@ class AdRewardApp {
     
     // 加载广告列表
     async loadAds() {
-        if (!window.userSystem.isLoggedIn) {
+        if (!window.userSystem || !window.userSystem.isLoggedIn) {
             console.log('用户未登录，跳过加载广告列表');
             return;
         }
@@ -322,19 +390,25 @@ class AdRewardApp {
         console.log('加载广告列表...');
         
         const userId = window.userSystem.currentUser.id;
-        const adsGrid = document.getElementById('ads-grid');
+        const adsContainer = document.getElementById('ads-container');
         
-        if (!adsGrid) {
-            console.error('广告网格容器未找到');
+        if (!adsContainer) {
+            console.error('广告容器未找到');
             return;
         }
         
         try {
-            const ads = await adSystem.getActiveAds();
-            adsGrid.innerHTML = '';
+            if (!window.adSystem || !window.adSystem.getActiveAds) {
+                console.error('广告系统未初始化');
+                adsContainer.innerHTML = '<div class="empty-state"><p>广告系统初始化中...</p></div>';
+                return;
+            }
+            
+            const ads = await window.adSystem.getActiveAds();
+            adsContainer.innerHTML = '';
             
             if (ads.length === 0) {
-                adsGrid.innerHTML = '<div class="no-ads">暂无可用广告，请稍后再来</div>';
+                adsContainer.innerHTML = '<div class="empty-state"><p>暂无可用广告，请稍后再来</p></div>';
                 console.log('没有可用广告');
                 return;
             }
@@ -342,56 +416,88 @@ class AdRewardApp {
             console.log(`找到 ${ads.length} 个广告`);
             
             for (const ad of ads) {
-                const hasViewed = await adSystem.hasUserViewedAd(userId, ad.id);
+                // 检查用户是否观看过此广告
+                let hasViewed = false;
+                if (window.adSystem.hasUserViewedAd) {
+                    hasViewed = await window.adSystem.hasUserViewedAd(userId, ad.id);
+                }
                 
                 const adElement = document.createElement('div');
-                adElement.className = `ad-item ${hasViewed ? 'watched' : ''}`;
+                adElement.className = `ad-card ${hasViewed ? 'watched' : ''}`;
                 adElement.dataset.adId = ad.id;
                 adElement.innerHTML = `
                     <div class="ad-header">
-                        <div class="ad-title">${ad.title}</div>
-                        <div class="ad-reward">${ad.reward.toFixed(2)}元</div>
+                        <div class="ad-title">${ad.title || '广告'}</div>
+                        <div class="ad-reward">¥${(ad.reward || 0).toFixed(2)}</div>
                     </div>
-                    <div class="ad-duration">时长: ${ad.duration}秒</div>
-                    <div class="ad-description">${ad.description}</div>
+                    <div class="ad-description">${ad.description || '观看完整广告内容获得收益'}</div>
+                    <div class="ad-meta">
+                        <div class="ad-duration">
+                            <i class="fas fa-clock"></i> ${ad.duration || 30}秒
+                        </div>
+                        <div class="ad-views">
+                            <i class="fas fa-eye"></i> ${ad.currentViews || 0}/${ad.maxViews || 1000}
+                        </div>
+                    </div>
+                    <div class="ad-action">
+                        <button class="watch-btn ${hasViewed ? 'disabled' : ''}" 
+                                onclick="app.startAdView(${ad.id})"
+                                ${hasViewed ? 'disabled' : ''}>
+                            ${hasViewed ? '<i class="fas fa-check"></i> 已观看' : '<i class="fas fa-play"></i> 立即观看'}
+                        </button>
+                    </div>
                 `;
                 
-                if (!hasViewed) {
-                    adElement.style.cursor = 'pointer';
-                    adElement.addEventListener('click', () => {
-                        console.log('点击广告:', ad.id, ad.title);
-                        this.startAdView(ad.id);
-                    });
-                }
-                
-                adsGrid.appendChild(adElement);
+                adsContainer.appendChild(adElement);
             }
             
             console.log('广告列表加载完成');
             
         } catch (error) {
             console.error('加载广告列表失败:', error);
-            adsGrid.innerHTML = '<div class="no-ads">加载广告失败，请刷新页面</div>';
+            adsContainer.innerHTML = '<div class="empty-state"><p>加载广告失败，请刷新页面</p></div>';
         }
     }
     
     // 开始观看广告
     async startAdView(adId) {
-        if (!window.userSystem.isLoggedIn) return;
+        if (!window.userSystem || !window.userSystem.isLoggedIn) {
+            this.showError('请先登录');
+            this.showAuthModal();
+            return;
+        }
         
         const userId = window.userSystem.currentUser.id;
         
         console.log('开始观看广告:', adId, '用户:', userId);
         
         try {
-            const result = await adSystem.startAdView(adId, userId);
+            if (!window.adSystem || !window.adSystem.startAdView) {
+                this.showError('广告系统未初始化');
+                return;
+            }
+            
+            const result = await window.adSystem.startAdView(adId, userId);
             
             if (result.success) {
-                // 初始化广告容器
-                adSystem.initAdContainer('ad-container');
-                
                 // 显示广告弹窗
-                document.getElementById('ad-modal').style.display = 'flex';
+                const modal = document.getElementById('ad-modal');
+                if (modal) {
+                    modal.style.display = 'flex';
+                }
+                
+                // 更新广告弹窗信息
+                const titleElement = document.getElementById('ad-modal-title');
+                const rewardElement = document.getElementById('ad-modal-reward');
+                
+                if (titleElement && result.ad) {
+                    titleElement.textContent = result.ad.title;
+                }
+                
+                if (rewardElement && result.ad) {
+                    rewardElement.textContent = `¥${result.ad.reward.toFixed(2)}`;
+                }
+                
                 this.currentAdId = adId;
             } else {
                 this.showError(result.message);
@@ -405,7 +511,7 @@ class AdRewardApp {
     
     // 加载观看历史
     async loadHistory() {
-        if (!window.userSystem.isLoggedIn) {
+        if (!window.userSystem || !window.userSystem.isLoggedIn) {
             console.log('用户未登录，跳过加载历史记录');
             return;
         }
@@ -421,11 +527,17 @@ class AdRewardApp {
         }
         
         try {
+            if (!window.userSystem.getUserViewRecords) {
+                console.error('用户系统方法不可用');
+                historyList.innerHTML = '<div class="empty-state"><p>历史记录功能开发中...</p></div>';
+                return;
+            }
+            
             const records = await window.userSystem.getUserViewRecords(userId, 10);
             historyList.innerHTML = '';
             
             if (records.length === 0) {
-                historyList.innerHTML = '<div class="no-history">暂无观看记录</div>';
+                historyList.innerHTML = '<div class="empty-state"><p>暂无观看记录</p></div>';
                 console.log('没有观看记录');
                 return;
             }
@@ -434,8 +546,13 @@ class AdRewardApp {
             
             for (const record of records) {
                 // 获取广告信息
-                const ad = await adSystem.getAd(record.adId);
-                if (!ad) continue;
+                let adTitle = '广告';
+                if (window.adSystem && window.adSystem.getAd) {
+                    const ad = await window.adSystem.getAd(record.adId);
+                    if (ad) {
+                        adTitle = ad.title;
+                    }
+                }
                 
                 const historyItem = document.createElement('div');
                 historyItem.className = 'history-item';
@@ -448,13 +565,16 @@ class AdRewardApp {
                     minute: '2-digit'
                 });
                 
+                const rewardAmount = record.reward || 0;
+                const isCompleted = record.completed || false;
+                
                 historyItem.innerHTML = `
                     <div class="history-info">
-                        <div class="history-ad-name">${ad.title}</div>
+                        <h4>${adTitle}</h4>
                         <div class="history-time">${timeStr}</div>
                     </div>
-                    <div class="history-reward ${record.completed ? '' : 'failed'}">
-                        ${record.completed ? `+${ad.reward.toFixed(2)}元` : '未完成'}
+                    <div class="history-amount ${isCompleted ? '' : 'failed'}">
+                        ${isCompleted ? `+¥${rewardAmount.toFixed(2)}` : '未完成'}
                     </div>
                 `;
                 
@@ -465,34 +585,26 @@ class AdRewardApp {
             
         } catch (error) {
             console.error('加载观看历史失败:', error);
-            historyList.innerHTML = '<div class="no-history">加载历史记录失败</div>';
+            historyList.innerHTML = '<div class="empty-state"><p>加载历史记录失败</p></div>';
         }
-    }
-    
-    // 关闭弹窗
-    closeModal(modalId) {
-        document.getElementById(modalId).style.display = 'none';
-    }
-    
-    // 清空表单数据
-    clearFormData() {
-        document.getElementById('login-username').value = '';
-        document.getElementById('login-password').value = '';
-        document.getElementById('register-phone').value = '';
-        document.getElementById('register-password').value = '';
-        document.getElementById('register-nickname').value = '';
-        document.getElementById('admin-account').value = '';
-        document.getElementById('admin-password').value = '';
     }
     
     // 显示成功消息
     showSuccess(message) {
-        alert('成功: ' + message);
+        if (window.showMessage) {
+            window.showMessage(message, 'success');
+        } else {
+            alert('成功: ' + message);
+        }
     }
     
     // 显示错误消息
     showError(message) {
-        alert('错误: ' + message);
+        if (window.showMessage) {
+            window.showMessage(message, 'error');
+        } else {
+            alert('错误: ' + message);
+        }
     }
 }
 

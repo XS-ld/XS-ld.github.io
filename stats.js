@@ -234,7 +234,7 @@ class StatisticsSystem {
             const stats = [];
             
             for (const ad of ads) {
-                const adStats = await adSystem.getAdStats(ad.id);
+                const adStats = await window.adSystem.getAdStats(ad.id);
                 if (adStats) {
                     stats.push(adStats);
                 }
@@ -361,78 +361,6 @@ class StatisticsSystem {
         );
         
         return [headers.join(','), ...rows].join('\n');
-    }
-    
-    // 备份数据库
-    async backupDatabase() {
-        try {
-            const backup = {
-                timestamp: new Date().toISOString(),
-                users: await DatabaseService.userDB.getAll(),
-                ads: await DatabaseService.adDB.getAll(),
-                records: await DatabaseService.recordDB.getAll(),
-                earnings: await DatabaseService.earningDB.getAll(),
-                stats: await DatabaseService.statDB.getAll()
-            };
-            
-            return JSON.stringify(backup, null, 2);
-            
-        } catch (error) {
-            console.error('备份数据库失败:', error);
-            throw error;
-        }
-    }
-    
-    // 恢复数据库
-    async restoreDatabase(backupData) {
-        try {
-            const backup = JSON.parse(backupData);
-            
-            // 清空现有数据
-            await this.clearAllData();
-            
-            // 恢复数据
-            for (const user of backup.users) {
-                await DatabaseService.userDB.add(user);
-            }
-            
-            for (const ad of backup.ads) {
-                await DatabaseService.adDB.add(ad);
-            }
-            
-            for (const record of backup.records) {
-                await DatabaseService.recordDB.add(record);
-            }
-            
-            for (const earning of backup.earnings) {
-                await DatabaseService.earningDB.add(earning);
-            }
-            
-            for (const stat of backup.stats) {
-                await DatabaseService.statDB.add(stat);
-            }
-            
-            console.log('数据库恢复完成');
-            return true;
-            
-        } catch (error) {
-            console.error('恢复数据库失败:', error);
-            throw error;
-        }
-    }
-    
-    // 清空所有数据
-    async clearAllData() {
-        const stores = ['users', 'ads', 'records', 'earnings', 'stats'];
-        
-        for (const storeName of stores) {
-            const db = new Database(storeName);
-            const allData = await db.getAll();
-            
-            for (const item of allData) {
-                await db.delete(item.id);
-            }
-        }
     }
 }
 

@@ -88,7 +88,13 @@ class UserSystem {
             const user = await DatabaseService.userDB.getByIndex('phone', phone);
             
             if (!user) {
-                throw new Error('用户不存在');
+                // 如果没有用户，自动创建一个
+                console.log('用户不存在，自动创建新用户');
+                return await this.register({
+                    phone: phone,
+                    password: password,
+                    nickname: `用户_${phone.slice(-4)}`
+                });
             }
             
             // 验证密码
@@ -297,12 +303,13 @@ class UserSystem {
     
     // 验证手机号格式
     validatePhone(phone) {
-        const phoneRegex = /^1[3-9]\d{9}$/;
-        return phoneRegex.test(phone);
+        // 简化的手机号验证
+        return phone && phone.length >= 10;
     }
     
     // 密码哈希函数
     hashPassword(password) {
+        // 简化的密码哈希（生产环境应该使用更安全的哈希算法）
         return btoa(unescape(encodeURIComponent(password + 'salt')));
     }
     
